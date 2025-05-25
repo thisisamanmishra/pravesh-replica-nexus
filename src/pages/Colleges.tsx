@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 
 const Colleges = () => {
@@ -230,9 +231,11 @@ const Colleges = () => {
                     </div>
                     
                     <div className="flex space-x-3">
-                      <Button size="sm" className="flex-1">
-                        View Details
-                      </Button>
+                      <Link to={`/college/${college.id}`} className="flex-1">
+                        <Button size="sm" className="w-full">
+                          View Details
+                        </Button>
+                      </Link>
                       <Button size="sm" variant="outline">
                         Compare
                       </Button>
