@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Star, MapPin, Phone, Mail, Globe, Calendar, Users, BookOpen, Trophy, Download, Share2, Heart, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Phone, Mail, Globe, Calendar, Users, BookOpen, Trophy, Download, Share2, Heart, ExternalLink, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +22,7 @@ const CollegeDetails = () => {
     rating: 4.8,
     reviews: 2547,
     image: "https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=400&fit=crop",
+    youtubeVideoId: "dQw4w9WgXcQ", // YouTube video ID for embedding
     gallery: [
       "https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=300&fit=crop",
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=300&fit=crop",
@@ -193,8 +193,9 @@ const CollegeDetails = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="video">Video</TabsTrigger>
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="cutoffs">Cutoffs</TabsTrigger>
             <TabsTrigger value="placements">Placements</TabsTrigger>
@@ -333,6 +334,44 @@ const CollegeDetails = () => {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          {/* Video Tab */}
+          <TabsContent value="video">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Play className="w-5 h-5 mr-2" />
+                  College Video Tour
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {college.youtubeVideoId ? (
+                  <div className="space-y-4">
+                    <div className="aspect-video">
+                      <iframe
+                        className="w-full h-full rounded-lg"
+                        src={`https://www.youtube.com/embed/${college.youtubeVideoId}`}
+                        title="College Video Tour"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-600">Get a virtual tour of {college.shortName} campus and facilities</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No video available for this college</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Courses Tab */}

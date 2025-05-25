@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { 
   Plus, 
@@ -11,7 +10,8 @@ import {
   BookOpen, 
   TrendingUp,
   Settings,
-  LogOut
+  LogOut,
+  Play
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -353,6 +353,20 @@ const AdminDashboard = () => {
                     <Label htmlFor="ranking">National Ranking</Label>
                     <Input id="ranking" type="number" placeholder="Ranking" />
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="youtubeVideo" className="flex items-center">
+                    <Play className="w-4 h-4 mr-2" />
+                    YouTube Video Link
+                  </Label>
+                  <Input 
+                    id="youtubeVideo" 
+                    placeholder="Enter YouTube video URL (e.g., https://www.youtube.com/watch?v=VIDEO_ID)" 
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Paste the complete YouTube URL. We'll extract the video ID automatically.
+                  </p>
                 </div>
 
                 <div>
