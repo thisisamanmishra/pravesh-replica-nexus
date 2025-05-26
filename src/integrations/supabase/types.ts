@@ -9,16 +9,132 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      colleges: {
+        Row: {
+          category: string
+          college_type: string
+          created_at: string
+          cutoff_info: string | null
+          description: string | null
+          established: number | null
+          fees_range: string | null
+          id: string
+          image_url: string | null
+          location: string
+          name: string
+          national_ranking: number | null
+          rating: number | null
+          total_courses: number | null
+          total_students: number | null
+          updated_at: string
+          youtube_video_url: string | null
+        }
+        Insert: {
+          category: string
+          college_type?: string
+          created_at?: string
+          cutoff_info?: string | null
+          description?: string | null
+          established?: number | null
+          fees_range?: string | null
+          id?: string
+          image_url?: string | null
+          location: string
+          name: string
+          national_ranking?: number | null
+          rating?: number | null
+          total_courses?: number | null
+          total_students?: number | null
+          updated_at?: string
+          youtube_video_url?: string | null
+        }
+        Update: {
+          category?: string
+          college_type?: string
+          created_at?: string
+          cutoff_info?: string | null
+          description?: string | null
+          established?: number | null
+          fees_range?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          name?: string
+          national_ranking?: number | null
+          rating?: number | null
+          total_courses?: number | null
+          total_students?: number | null
+          updated_at?: string
+          youtube_video_url?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+          user_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_type?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +249,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
