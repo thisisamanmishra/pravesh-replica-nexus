@@ -61,27 +61,43 @@ const Auth = () => {
             description: error.message,
             variant: "destructive"
           });
-        } else if (data.user && formData.signUpAsAdmin) {
-          // Add admin role if requested
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert([
-              { user_id: data.user.id, role: 'admin' }
-            ]);
+        } else if (data.user) {
+          // If user wants admin role, add it after successful signup
+          if (formData.signUpAsAdmin) {
+            try {
+              const { error: roleError } = await supabase
+                .from('user_roles')
+                .insert([
+                  { user_id: data.user.id, role: 'admin' }
+                ]);
 
-          if (roleError) {
-            console.error('Error adding admin role:', roleError);
+              if (roleError) {
+                console.error('Error adding admin role:', roleError);
+                toast({
+                  title: "Partial Success",
+                  description: "Account created but admin role assignment failed. Please contact support.",
+                  variant: "destructive"
+                });
+              } else {
+                toast({
+                  title: "Success",
+                  description: "Admin account created successfully! Please check your email to verify your account.",
+                });
+              }
+            } catch (roleError) {
+              console.error('Error adding admin role:', roleError);
+              toast({
+                title: "Partial Success",
+                description: "Account created but admin role assignment failed. Please contact support.",
+                variant: "destructive"
+              });
+            }
+          } else {
+            toast({
+              title: "Success",
+              description: "Account created successfully! Please check your email to verify your account.",
+            });
           }
-
-          toast({
-            title: "Success",
-            description: "Admin account created successfully! Please check your email to verify your account.",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Account created successfully! Please check your email to verify your account.",
-          });
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
@@ -192,7 +208,7 @@ const Auth = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="userType">I am a</Label>
-                    <Select onValueChange={(value) => setFormData({ ...formData, userType: value })}>
+                    <Select onValueChange={(value) => setFormData({ ...formData, userType: value })} defaultValue="student">
                       <SelectTrigger>
                         <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
@@ -205,16 +221,16 @@ const Auth = () => {
                     </Select>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <input
                       type="checkbox"
                       id="signUpAsAdmin"
                       checked={formData.signUpAsAdmin}
                       onChange={(e) => setFormData({ ...formData, signUpAsAdmin: e.target.checked })}
-                      className="rounded border-gray-300"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <Label htmlFor="signUpAsAdmin" className="text-sm">
-                      Sign up as admin (for college management)
+                    <Label htmlFor="signUpAsAdmin" className="text-sm font-medium text-blue-900 cursor-pointer">
+                      🔑 Sign up as admin (for college management)
                     </Label>
                   </div>
                 </>
