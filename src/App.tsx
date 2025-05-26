@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Colleges from "./pages/Colleges";
 import CollegeDetails from "./pages/CollegeDetails";
+import Courses from "./pages/Courses";
+import RankPredictor from "./pages/RankPredictor";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +29,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/colleges" element={<Colleges />} />
             <Route path="/college/:id" element={<CollegeDetails />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/rank-predictor" element={<RankPredictor />} />
             <Route 
               path="/admin" 
               element={

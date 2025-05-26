@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -25,7 +26,8 @@ const Auth = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    userType: 'student'
+    userType: 'student',
+    signUpAsAdmin: false
   });
 
   if (user) {
@@ -47,7 +49,7 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await signUp(formData.email, formData.password, {
+        const { data, error } = await signUp(formData.email, formData.password, {
           full_name: formData.fullName,
           phone: formData.phone,
           user_type: formData.userType
@@ -58,6 +60,22 @@ const Auth = () => {
             title: "Error",
             description: error.message,
             variant: "destructive"
+          });
+        } else if (data.user && formData.signUpAsAdmin) {
+          // Add admin role if requested
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert([
+              { user_id: data.user.id, role: 'admin' }
+            ]);
+
+          if (roleError) {
+            console.error('Error adding admin role:', roleError);
+          }
+
+          toast({
+            title: "Success",
+            description: "Admin account created successfully! Please check your email to verify your account.",
           });
         } else {
           toast({
@@ -185,6 +203,19 @@ const Auth = () => {
                         <SelectItem value="college">College Representative</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="signUpAsAdmin"
+                      checked={formData.signUpAsAdmin}
+                      onChange={(e) => setFormData({ ...formData, signUpAsAdmin: e.target.checked })}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="signUpAsAdmin" className="text-sm">
+                      Sign up as admin (for college management)
+                    </Label>
                   </div>
                 </>
               )}

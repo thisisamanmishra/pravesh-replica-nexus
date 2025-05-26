@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Search, MapPin, Star, Users, BookOpen, TrendingUp } from 'lucide-react';
+import { Search, MapPin, Star, Users, BookOpen, TrendingUp, Calculator, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,9 +82,25 @@ const Index = () => {
               Discover top colleges, compare courses, check cutoffs, and make informed decisions for your future
             </p>
             
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto relative animate-scale-in">
-              <div className="flex bg-white rounded-full p-2 shadow-2xl">
+            {/* Rank Predictor Button */}
+            <div className="max-w-2xl mx-auto animate-scale-in">
+              <Link to="/rank-predictor">
+                <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-12 py-6 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 group">
+                  <Calculator className="w-6 h-6 mr-3 group-hover:animate-bounce" />
+                  <span className="relative">
+                    Predict Your Rank
+                    <Sparkles className="w-5 h-5 absolute -top-2 -right-6 text-yellow-300 animate-pulse" />
+                  </span>
+                </Button>
+              </Link>
+              <p className="text-blue-200 mt-4 text-sm">
+                Get personalized college predictions based on your exam scores
+              </p>
+            </div>
+            
+            {/* Search Bar Below Rank Predictor */}
+            <div className="max-w-2xl mx-auto relative mt-8">
+              <div className="flex bg-white rounded-full p-2 shadow-xl">
                 <Input
                   type="text"
                   placeholder="Search colleges, courses, or locations..."
@@ -92,9 +108,11 @@ const Index = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 border-0 focus:ring-0 text-gray-900 text-lg px-6"
                 />
-                <Button className="bg-blue-600 hover:bg-blue-700 rounded-full px-8">
-                  <Search className="w-5 h-5" />
-                </Button>
+                <Link to="/colleges">
+                  <Button className="bg-blue-600 hover:bg-blue-700 rounded-full px-8">
+                    <Search className="w-5 h-5" />
+                  </Button>
+                </Link>
               </div>
             </div>
             
@@ -190,9 +208,11 @@ const Index = () => {
                     </div>
                   </div>
                   
-                  <Button className="w-full mt-4" variant="outline">
-                    View Details
-                  </Button>
+                  <Link to={`/college/${college.id}`}>
+                    <Button className="w-full mt-4" variant="outline">
+                      View Details
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -247,8 +267,8 @@ const Index = () => {
               <ul className="space-y-2 text-gray-400">
                 <li><Link to="/colleges" className="hover:text-white">All Colleges</Link></li>
                 <li><Link to="/courses" className="hover:text-white">Courses</Link></li>
-                <li><Link to="/cutoffs" className="hover:text-white">Cutoffs</Link></li>
-                <li><Link to="/rankings" className="hover:text-white">Rankings</Link></li>
+                <li><Link to="/rank-predictor" className="hover:text-white">Rank Predictor</Link></li>
+                <li><a href="#" className="hover:text-white">Rankings</a></li>
               </ul>
             </div>
             
