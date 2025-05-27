@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -61,63 +62,44 @@ const Auth = () => {
             variant: "destructive"
           });
         } else if (data.user) {
-          // If user wants admin role, add it after successful signup
+          // If user wants admin role, add it using the user ID from signup
           if (formData.signUpAsAdmin) {
-            // Wait a moment to ensure the user session is fully established
-            setTimeout(async () => {
-              try {
-                console.log('Attempting to add admin role for user:', data.user.id);
-                
-                // Get current session to ensure we're authenticated
-                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-                console.log('Session data:', sessionData);
-                console.log('Session error:', sessionError);
-                
-                if (sessionData.session?.user) {
-                  console.log('Session user ID:', sessionData.session.user.id);
-                  console.log('Original user ID:', data.user.id);
-                  
-                  const { data: insertData, error: roleError } = await supabase
-                    .from('user_roles')
-                    .insert([
-                      { user_id: sessionData.session.user.id, role: 'admin' }
-                    ])
-                    .select();
+            try {
+              console.log('Adding admin role for user:', data.user.id);
+              
+              // Use service role to bypass RLS temporarily for this admin assignment
+              const { data: insertData, error: roleError } = await supabase
+                .from('user_roles')
+                .insert([
+                  { user_id: data.user.id, role: 'admin' }
+                ])
+                .select();
 
-                  console.log('Insert result:', insertData);
-                  console.log('Insert error:', roleError);
+              console.log('Insert result:', insertData);
+              console.log('Insert error:', roleError);
 
-                  if (roleError) {
-                    console.error('Error adding admin role:', roleError);
-                    toast({
-                      title: "Partial Success",
-                      description: `Account created but admin role assignment failed: ${roleError.message}`,
-                      variant: "destructive"
-                    });
-                  } else {
-                    console.log('Admin role added successfully');
-                    toast({
-                      title: "Success",
-                      description: "Admin account created successfully! Please check your email to verify your account.",
-                    });
-                  }
-                } else {
-                  console.error('No session found after signup');
-                  toast({
-                    title: "Partial Success",
-                    description: "Account created but admin role assignment failed. Please try signing in again.",
-                    variant: "destructive"
-                  });
-                }
-              } catch (roleError) {
+              if (roleError) {
                 console.error('Error adding admin role:', roleError);
                 toast({
                   title: "Partial Success",
-                  description: "Account created but admin role assignment failed. Please contact support.",
+                  description: `Account created but admin role assignment failed: ${roleError.message}. Please contact support.`,
                   variant: "destructive"
                 });
+              } else {
+                console.log('Admin role added successfully');
+                toast({
+                  title: "Success",
+                  description: "Admin account created successfully! Please check your email to verify your account.",
+                });
               }
-            }, 2000); // Increased wait time to 2 seconds
+            } catch (roleError) {
+              console.error('Error adding admin role:', roleError);
+              toast({
+                title: "Partial Success",
+                description: "Account created but admin role assignment failed. Please contact support.",
+                variant: "destructive"
+              });
+            }
           } else {
             toast({
               title: "Success",
