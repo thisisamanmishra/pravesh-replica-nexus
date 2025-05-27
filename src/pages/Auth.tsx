@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,28 @@ const Auth = () => {
     return <Navigate to="/" replace />;
   }
 
+  const assignAdminRole = async (userId: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assign-admin-role`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to assign admin role');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -62,37 +83,15 @@ const Auth = () => {
             variant: "destructive"
           });
         } else if (data.user) {
-          // If user wants admin role, add it using the user ID from signup
+          // If user wants admin role, call the edge function to assign it
           if (formData.signUpAsAdmin) {
             try {
-              console.log('Adding admin role for user:', data.user.id);
-              
-              // Use service role to bypass RLS temporarily for this admin assignment
-              const { data: insertData, error: roleError } = await supabase
-                .from('user_roles')
-                .insert([
-                  { user_id: data.user.id, role: 'admin' }
-                ])
-                .select();
-
-              console.log('Insert result:', insertData);
-              console.log('Insert error:', roleError);
-
-              if (roleError) {
-                console.error('Error adding admin role:', roleError);
-                toast({
-                  title: "Partial Success",
-                  description: `Account created but admin role assignment failed: ${roleError.message}. Please contact support.`,
-                  variant: "destructive"
-                });
-              } else {
-                console.log('Admin role added successfully');
-                toast({
-                  title: "Success",
-                  description: "Admin account created successfully! Please check your email to verify your account.",
-                });
-              }
-            } catch (roleError) {
+              await assignAdminRole(data.user.id);
+              toast({
+                title: "Success",
+                description: "Admin account created successfully! Please check your email to verify your account.",
+              });
+            } catch (roleError: any) {
               console.error('Error adding admin role:', roleError);
               toast({
                 title: "Partial Success",
