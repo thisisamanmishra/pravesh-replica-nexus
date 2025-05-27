@@ -33,28 +33,6 @@ const Auth = () => {
     return <Navigate to="/" replace />;
   }
 
-  const assignAdminRole = async (userId: string) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/assign-admin-role`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to assign admin role');
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,39 +48,40 @@ const Auth = () => {
           return;
         }
 
-        const { data, error } = await signUp(formData.email, formData.password, {
+        const { data: signUpData, error: signUpError } = await signUp(formData.email, formData.password, {
           full_name: formData.fullName,
           phone: formData.phone,
           user_type: formData.userType
         });
 
-        if (error) {
+        if (signUpError) {
           toast({
             title: "Error",
-            description: error.message,
+            description: signUpError.message,
             variant: "destructive"
           });
-        } else if (data.user) {
-          // If user wants admin role, call the edge function to assign it
-          if (formData.signUpAsAdmin) {
-            try {
-              await assignAdminRole(data.user.id);
-              toast({
-                title: "Success",
-                description: "Admin account created successfully! Please check your email to verify your account.",
-              });
-            } catch (roleError: any) {
-              console.error('Error adding admin role:', roleError);
-              toast({
-                title: "Partial Success",
-                description: "Account created but admin role assignment failed. Please contact support.",
-                variant: "destructive"
-              });
-            }
+        } else if (signUpData.user) {
+          // Insert role directly using the service client
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert([
+              { 
+                user_id: signUpData.user.id, 
+                role: formData.signUpAsAdmin ? 'admin' : 'user'
+              }
+            ]);
+
+          if (roleError) {
+            console.error('Error adding role:', roleError);
+            toast({
+              title: "Partial Success",
+              description: "Account created but role assignment failed. Please contact support.",
+              variant: "destructive"
+            });
           } else {
             toast({
               title: "Success",
-              description: "Account created successfully! Please check your email to verify your account.",
+              description: `Account created successfully as ${formData.signUpAsAdmin ? 'admin' : 'user'}! Please check your email to verify your account.`,
             });
           }
         }
