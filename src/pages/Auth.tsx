@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User, Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -26,7 +26,7 @@ const Auth = () => {
     password: '',
     confirmPassword: '',
     userType: 'student',
-    signUpAsAdmin: false
+    isAdmin: false
   });
 
   if (user) {
@@ -48,42 +48,24 @@ const Auth = () => {
           return;
         }
 
-        const { data: signUpData, error: signUpError } = await signUp(formData.email, formData.password, {
+        const { error } = await signUp(formData.email, formData.password, {
           full_name: formData.fullName,
           phone: formData.phone,
-          user_type: formData.userType
+          user_type: formData.userType,
+          is_admin: formData.isAdmin
         });
 
-        if (signUpError) {
+        if (error) {
           toast({
             title: "Error",
-            description: signUpError.message,
+            description: error.message,
             variant: "destructive"
           });
-        } else if (signUpData.user) {
-          // Insert role directly using the service client
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert([
-              { 
-                user_id: signUpData.user.id, 
-                role: formData.signUpAsAdmin ? 'admin' : 'user'
-              }
-            ]);
-
-          if (roleError) {
-            console.error('Error adding role:', roleError);
-            toast({
-              title: "Partial Success",
-              description: "Account created but role assignment failed. Please contact support.",
-              variant: "destructive"
-            });
-          } else {
-            toast({
-              title: "Success",
-              description: `Account created successfully as ${formData.signUpAsAdmin ? 'admin' : 'user'}! Please check your email to verify your account.`,
-            });
-          }
+        } else {
+          toast({
+            title: "Success",
+            description: `Account created successfully${formData.isAdmin ? ' as admin' : ''}! Please check your email to verify your account.`,
+          });
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
@@ -210,12 +192,12 @@ const Auth = () => {
                   <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <input
                       type="checkbox"
-                      id="signUpAsAdmin"
-                      checked={formData.signUpAsAdmin}
-                      onChange={(e) => setFormData({ ...formData, signUpAsAdmin: e.target.checked })}
+                      id="isAdmin"
+                      checked={formData.isAdmin}
+                      onChange={(e) => setFormData({ ...formData, isAdmin: e.target.checked })}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <Label htmlFor="signUpAsAdmin" className="text-sm font-medium text-blue-900 cursor-pointer">
+                    <Label htmlFor="isAdmin" className="text-sm font-medium text-blue-900 cursor-pointer">
                       🔑 Sign up as admin (for college management)
                     </Label>
                   </div>
