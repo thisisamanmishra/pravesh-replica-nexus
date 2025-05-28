@@ -46,10 +46,10 @@ export const useCollege = (id: string) => {
         .from('colleges')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
-      return data as College;
+      return data as College | null;
     },
     enabled: !!id
   });
@@ -78,6 +78,7 @@ export const useCreateCollege = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Create college error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to add college",
@@ -93,14 +94,21 @@ export const useUpdateCollege = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<College> & { id: string }) => {
+      console.log('Updating college with data:', { id, updates });
+      
       const { data, error } = await supabase
         .from('colleges')
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
+      
+      console.log('Update result:', data);
       return data;
     },
     onSuccess: () => {
@@ -111,6 +119,7 @@ export const useUpdateCollege = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Update college error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update college",
@@ -141,6 +150,7 @@ export const useDeleteCollege = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Delete college error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete college",
