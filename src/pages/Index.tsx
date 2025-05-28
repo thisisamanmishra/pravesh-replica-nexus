@@ -7,58 +7,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
 import { Link } from 'react-router-dom';
+import { useHomepageSettings } from '@/hooks/useHomepageSettings';
+import { useColleges } from '@/hooks/useColleges';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: settings } = useHomepageSettings();
+  const { data: allColleges = [] } = useColleges();
 
-  const featuredColleges = [
-    {
-      id: 1,
-      name: "Indian Institute of Technology Delhi",
-      location: "New Delhi",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=300&fit=crop",
-      ranking: "#1",
-      category: "Engineering",
-      fees: "₹2.5L - 8L",
-      cutoff: "JEE Advanced Rank 1-500"
-    },
-    {
-      id: 2,
-      name: "All India Institute of Medical Sciences",
-      location: "New Delhi",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=300&fit=crop",
-      ranking: "#1",
-      category: "Medical",
-      fees: "₹1.3L - 5L",
-      cutoff: "NEET Score 720+"
-    },
-    {
-      id: 3,
-      name: "Indian Institute of Management Ahmedabad",
-      location: "Ahmedabad",
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=300&fit=crop",
-      ranking: "#1",
-      category: "Management",
-      fees: "₹25L - 30L",
-      cutoff: "CAT Percentile 99+"
-    },
-    {
-      id: 4,
-      name: "Indian Institute of Science",
-      location: "Bangalore",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop",
-      ranking: "#1",
-      category: "Science",
-      fees: "₹2L - 6L",
-      cutoff: "GATE Score 800+"
-    }
-  ];
+  // Get featured colleges based on settings
+  const featuredColleges = settings?.featured_colleges_ids 
+    ? allColleges.filter(college => settings.featured_colleges_ids.includes(college.id)).slice(0, 4)
+    : allColleges.slice(0, 4);
 
-  const categories = [
+  // Default fallback values
+  const websiteName = settings?.website_name || 'College Lelo';
+  const heroTitle = settings?.hero_title || 'Find Your Perfect College';
+  const heroSubtitle = settings?.hero_subtitle || 'Discover top colleges, compare courses, check cutoffs, and make informed decisions for your future';
+  const quickStats = settings?.quick_stats || {
+    colleges: "15,000+",
+    courses: "500+", 
+    students: "2L+",
+    cities: "50+"
+  };
+  const categories = settings?.categories || [
     { name: "Engineering", count: "5000+", icon: "⚙️" },
     { name: "Medical", count: "1200+", icon: "🏥" },
     { name: "Management", count: "3000+", icon: "💼" },
@@ -66,20 +38,40 @@ const Index = () => {
     { name: "Law", count: "800+", icon: "⚖️" },
     { name: "Agriculture", count: "600+", icon: "🌾" }
   ];
+  const features = settings?.features || [
+    { title: "Smart Search", description: "Advanced filtering by location, course, fees, cutoffs and more to find your perfect match.", icon: "Search" },
+    { title: "Real-time Data", description: "Latest cutoffs, admission updates, and college information updated regularly.", icon: "TrendingUp" },
+    { title: "Expert Guidance", description: "Get personalized counseling and guidance from education experts.", icon: "Users" }
+  ];
+
+  const getIconComponent = (iconName: string) => {
+    const icons: { [key: string]: any } = {
+      Search,
+      TrendingUp,
+      Users,
+      BookOpen,
+      Calculator
+    };
+    return icons[iconName] || Search;
+  };
+
+  const heroStyle = settings?.hero_background_image 
+    ? { backgroundImage: `url(${settings.hero_background_image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20">
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white py-20" style={heroStyle}>
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Find Your Perfect College
+              {heroTitle}
             </h1>
             <p className="text-xl mb-8 text-blue-100 animate-fade-in">
-              Discover top colleges, compare courses, check cutoffs, and make informed decisions for your future
+              {heroSubtitle}
             </p>
             
             {/* Rank Predictor Button */}
@@ -119,19 +111,19 @@ const Index = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
               <div className="text-center">
-                <div className="text-3xl font-bold">15,000+</div>
+                <div className="text-3xl font-bold">{quickStats.colleges}</div>
                 <div className="text-blue-200">Colleges</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold">500+</div>
+                <div className="text-3xl font-bold">{quickStats.courses}</div>
                 <div className="text-blue-200">Courses</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold">2L+</div>
+                <div className="text-3xl font-bold">{quickStats.students}</div>
                 <div className="text-blue-200">Students</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold">50+</div>
+                <div className="text-3xl font-bold">{quickStats.cities}</div>
                 <div className="text-blue-200">Cities</div>
               </div>
             </div>
@@ -172,16 +164,16 @@ const Index = () => {
               <Card key={college.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover-scale">
                 <div className="relative">
                   <img 
-                    src={college.image} 
+                    src={college.image_url || "https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=300&fit=crop"} 
                     alt={college.name}
                     className="w-full h-48 object-cover"
                   />
                   <Badge className="absolute top-3 left-3 bg-green-600">
-                    {college.ranking}
+                    #{college.national_ranking || 'N/A'}
                   </Badge>
                   <div className="absolute top-3 right-3 bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center">
                     <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-semibold ml-1">{college.rating}</span>
+                    <span className="text-sm font-semibold ml-1">{college.rating || 'N/A'}</span>
                   </div>
                 </div>
                 
@@ -200,11 +192,11 @@ const Index = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Fees:</span>
-                      <span className="font-semibold">{college.fees}</span>
+                      <span className="font-semibold">{college.fees_range || 'Contact for fees'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Cutoff:</span>
-                      <span className="font-semibold text-green-600">{college.cutoff}</span>
+                      <span className="font-semibold text-green-600">{college.cutoff_info || 'Contact for cutoff'}</span>
                     </div>
                   </div>
                   
@@ -223,32 +215,21 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose College Pravesh?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Why Choose {websiteName}?</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-bold text-xl mb-3">Smart Search</h3>
-              <p className="text-gray-600">Advanced filtering by location, course, fees, cutoffs and more to find your perfect match.</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-bold text-xl mb-3">Real-time Data</h3>
-              <p className="text-gray-600">Latest cutoffs, admission updates, and college information updated regularly.</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-bold text-xl mb-3">Expert Guidance</h3>
-              <p className="text-gray-600">Get personalized counseling and guidance from education experts.</p>
-            </div>
+            {features.map((feature, index) => {
+              const IconComponent = getIconComponent(feature.icon);
+              return (
+                <div key={index} className="text-center">
+                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IconComponent className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-3">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -258,7 +239,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-xl mb-4">College Pravesh</h3>
+              <h3 className="font-bold text-xl mb-4">{websiteName}</h3>
               <p className="text-gray-400">Your trusted partner in finding the perfect college for your future.</p>
             </div>
             
@@ -294,7 +275,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 College Pravesh. All rights reserved.</p>
+            <p>&copy; 2024 {websiteName}. All rights reserved.</p>
           </div>
         </div>
       </footer>

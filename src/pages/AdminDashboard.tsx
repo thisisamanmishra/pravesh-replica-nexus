@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { 
   Plus, 
@@ -12,7 +11,8 @@ import {
   TrendingUp,
   Settings,
   LogOut,
-  Play
+  Play,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { useColleges, useCreateCollege, useUpdateCollege, useDeleteCollege, College } from '@/hooks/useColleges';
 import { useToast } from '@/hooks/use-toast';
+import HomepageCustomizer from '@/components/HomepageCustomizer';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -166,7 +167,7 @@ const AdminDashboard = () => {
       <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6 border-b">
           <h2 className="text-xl font-bold text-gray-900">Admin Panel</h2>
-          <p className="text-sm text-gray-600">College Pravesh</p>
+          <p className="text-sm text-gray-600">College Lelo</p>
         </div>
         
         <nav className="p-4">
@@ -193,6 +194,17 @@ const AdminDashboard = () => {
                 Colleges
               </button>
             </li>
+            <li>
+              <button 
+                onClick={() => setActiveTab('homepage')}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === 'homepage' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                }`}
+              >
+                <Palette className="inline w-4 h-4 mr-3" />
+                Homepage
+              </button>
+            </li>
           </ul>
         </nav>
         
@@ -212,10 +224,12 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900">
               {activeTab === 'overview' && 'Dashboard Overview'}
               {activeTab === 'colleges' && 'Manage Colleges'}
+              {activeTab === 'homepage' && 'Homepage Customization'}
             </h1>
             <p className="text-gray-600 mt-1">
               {activeTab === 'overview' && 'Monitor your platform performance'}
               {activeTab === 'colleges' && 'Add, edit, and manage college information'}
+              {activeTab === 'homepage' && 'Customize the homepage content and appearance'}
             </p>
           </div>
           
@@ -318,6 +332,10 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {activeTab === 'homepage' && (
+          <HomepageCustomizer />
         )}
 
         {/* Add/Edit College Modal */}

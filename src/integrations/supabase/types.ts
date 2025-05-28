@@ -69,6 +69,51 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_settings: {
+        Row: {
+          categories: Json | null
+          created_at: string
+          featured_colleges_ids: string[] | null
+          features: Json | null
+          hero_background_image: string | null
+          hero_subtitle: string
+          hero_title: string
+          id: string
+          logo_url: string | null
+          quick_stats: Json | null
+          updated_at: string
+          website_name: string
+        }
+        Insert: {
+          categories?: Json | null
+          created_at?: string
+          featured_colleges_ids?: string[] | null
+          features?: Json | null
+          hero_background_image?: string | null
+          hero_subtitle?: string
+          hero_title?: string
+          id?: string
+          logo_url?: string | null
+          quick_stats?: Json | null
+          updated_at?: string
+          website_name?: string
+        }
+        Update: {
+          categories?: Json | null
+          created_at?: string
+          featured_colleges_ids?: string[] | null
+          features?: Json | null
+          hero_background_image?: string | null
+          hero_subtitle?: string
+          hero_title?: string
+          id?: string
+          logo_url?: string | null
+          quick_stats?: Json | null
+          updated_at?: string
+          website_name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
