@@ -12,7 +12,10 @@ import {
   Settings,
   LogOut,
   Play,
-  Palette
+  Palette,
+  MessageSquare,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColleges, useCreateCollege, useUpdateCollege, useDeleteCollege, College } from '@/hooks/useColleges';
+import { useContactQueries, useUpdateContactQuery } from '@/hooks/useContactQueries';
 import { useToast } from '@/hooks/use-toast';
 import HomepageCustomizer from '@/components/HomepageCustomizer';
 
@@ -42,9 +46,11 @@ const AdminDashboard = () => {
   
   const { signOut } = useAuth();
   const { data: colleges = [], isLoading } = useColleges();
+  const { data: contactQueries = [], isLoading: isLoadingQueries } = useContactQueries();
   const createCollege = useCreateCollege();
   const updateCollege = useUpdateCollege();
   const deleteCollege = useDeleteCollege();
+  const updateContactQuery = useUpdateContactQuery();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -148,17 +154,31 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateQueryStatus = async (id: string, status: string) => {
+    try {
+      await updateContactQuery.mutateAsync({ id, status });
+    } catch (error) {
+      console.error('Error updating query status:', error);
+    }
+  };
+
   const filteredColleges = colleges.filter(college =>
     college.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     college.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
     college.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredQueries = contactQueries.filter(query =>
+    query.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    query.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    query.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const stats = [
     { title: 'Total Colleges', value: colleges.length.toString(), icon: GraduationCap, change: '+12%' },
-    { title: 'Categories', value: new Set(colleges.map(c => c.category)).size.toString(), icon: BookOpen, change: '+8%' },
-    { title: 'Locations', value: new Set(colleges.map(c => c.location)).size.toString(), icon: TrendingUp, change: '+15%' },
-    { title: 'Avg Rating', value: (colleges.reduce((acc, c) => acc + (c.rating || 0), 0) / colleges.length || 0).toFixed(1), icon: Users, change: '+23%' }
+    { title: 'Contact Queries', value: contactQueries.length.toString(), icon: MessageSquare, change: '+5%' },
+    { title: 'Pending Queries', value: contactQueries.filter(q => q.status === 'pending').length.toString(), icon: Clock, change: '+3%' },
+    { title: 'Resolved Queries', value: contactQueries.filter(q => q.status === 'resolved').length.toString(), icon: CheckCircle, change: '+8%' }
   ];
 
   return (
@@ -196,6 +216,17 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button 
+                onClick={() => setActiveTab('queries')}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === 'queries' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                }`}
+              >
+                <MessageSquare className="inline w-4 h-4 mr-3" />
+                Contact Queries
+              </button>
+            </li>
+            <li>
+              <button 
                 onClick={() => setActiveTab('homepage')}
                 className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                   activeTab === 'homepage' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
@@ -224,11 +255,13 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900">
               {activeTab === 'overview' && 'Dashboard Overview'}
               {activeTab === 'colleges' && 'Manage Colleges'}
+              {activeTab === 'queries' && 'Contact Queries'}
               {activeTab === 'homepage' && 'Homepage Customization'}
             </h1>
             <p className="text-gray-600 mt-1">
               {activeTab === 'overview' && 'Monitor your platform performance'}
               {activeTab === 'colleges' && 'Add, edit, and manage college information'}
+              {activeTab === 'queries' && 'View and manage user contact queries'}
               {activeTab === 'homepage' && 'Customize the homepage content and appearance'}
             </p>
           </div>
@@ -323,6 +356,79 @@ const AdminDashboard = () => {
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'queries' && (
+          <div className="space-y-6">
+            {/* Search */}
+            <div className="flex space-x-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input 
+                  placeholder="Search queries..." 
+                  className="pl-10" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Queries Table */}
+            <Card>
+              <CardContent className="p-0">
+                {isLoadingQueries ? (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Query</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredQueries.map((query) => (
+                        <TableRow key={query.id}>
+                          <TableCell className="font-medium">{query.name}</TableCell>
+                          <TableCell>{query.email}</TableCell>
+                          <TableCell>{query.phone}</TableCell>
+                          <TableCell className="max-w-xs truncate">{query.description}</TableCell>
+                          <TableCell>
+                            <Badge variant={query.status === 'pending' ? 'destructive' : 'default'}>
+                              {query.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{new Date(query.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Select
+                              value={query.status}
+                              onValueChange={(status) => handleUpdateQueryStatus(query.id, status)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                         </TableRow>
                       ))}

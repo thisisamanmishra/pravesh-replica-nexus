@@ -1,17 +1,18 @@
-
 import { useState } from 'react';
-import { Search, MapPin, Star, Users, BookOpen, TrendingUp, Calculator, Sparkles } from 'lucide-react';
+import { Search, MapPin, Star, Users, BookOpen, TrendingUp, Calculator, Sparkles, Phone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Navbar from '@/components/Navbar';
+import ContactModal from '@/components/ContactModal';
 import { Link } from 'react-router-dom';
 import { useHomepageSettings } from '@/hooks/useHomepageSettings';
 import { useColleges } from '@/hooks/useColleges';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showContactModal, setShowContactModal] = useState(false);
   const { data: settings } = useHomepageSettings();
   const { data: allColleges = [] } = useColleges();
 
@@ -234,6 +235,52 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Get in Touch Section */}
+      <section className="py-16 bg-blue-600">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Need Help Finding the Right College?</h2>
+          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
+            Our education experts are here to guide you through your college selection process. 
+            Get personalized assistance and answers to all your questions.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg"
+              onClick={() => setShowContactModal(true)}
+              className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+            >
+              <MessageCircle className="w-6 h-6 mr-3" />
+              Get in Touch
+            </Button>
+            
+            <Button 
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4 rounded-full"
+            >
+              <Phone className="w-6 h-6 mr-3" />
+              Call Us Now
+            </Button>
+          </div>
+          
+          <div className="mt-8 grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">24/7</div>
+              <div className="text-blue-200">Expert Support</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">Free</div>
+              <div className="text-blue-200">Consultation</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">1000+</div>
+              <div className="text-blue-200">Students Helped</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
@@ -279,6 +326,12 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* Contact Modal */}
+      <ContactModal 
+        isOpen={showContactModal} 
+        onClose={() => setShowContactModal(false)} 
+      />
     </div>
   );
 };
