@@ -75,12 +75,12 @@ export class WebScrapingService {
       }
 
       console.log('Scrape successful, processing data...');
-      const processedData = this.processScrapedData(scrapeResponse.data);
+      const processedData = this.processScrapedData(scrapeResponse);
       
       return { 
         success: true,
         data: processedData,
-        rawData: scrapeResponse.data
+        rawData: scrapeResponse
       };
     } catch (error) {
       console.error('Error during scraping:', error);
