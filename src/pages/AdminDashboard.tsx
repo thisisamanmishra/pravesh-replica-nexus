@@ -15,7 +15,8 @@ import {
   Palette,
   MessageSquare,
   CheckCircle,
-  Clock
+  Clock,
+  Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,7 @@ import { useColleges, useCreateCollege, useUpdateCollege, useDeleteCollege, Coll
 import { useContactQueries, useUpdateContactQuery } from '@/hooks/useContactQueries';
 import { useToast } from '@/hooks/use-toast';
 import HomepageCustomizer from '@/components/HomepageCustomizer';
+import WebScrapingPanel from '@/components/WebScrapingPanel';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -227,6 +229,17 @@ const AdminDashboard = () => {
             </li>
             <li>
               <button 
+                onClick={() => setActiveTab('scraping')}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                  activeTab === 'scraping' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
+                }`}
+              >
+                <Globe className="inline w-4 h-4 mr-3" />
+                Web Scraping
+              </button>
+            </li>
+            <li>
+              <button 
                 onClick={() => setActiveTab('homepage')}
                 className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                   activeTab === 'homepage' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'
@@ -256,12 +269,14 @@ const AdminDashboard = () => {
               {activeTab === 'overview' && 'Dashboard Overview'}
               {activeTab === 'colleges' && 'Manage Colleges'}
               {activeTab === 'queries' && 'Contact Queries'}
+              {activeTab === 'scraping' && 'Web Scraping'}
               {activeTab === 'homepage' && 'Homepage Customization'}
             </h1>
             <p className="text-gray-600 mt-1">
               {activeTab === 'overview' && 'Monitor your platform performance'}
               {activeTab === 'colleges' && 'Add, edit, and manage college information'}
               {activeTab === 'queries' && 'View and manage user contact queries'}
+              {activeTab === 'scraping' && 'Scrape college data from external websites'}
               {activeTab === 'homepage' && 'Customize the homepage content and appearance'}
             </p>
           </div>
@@ -438,6 +453,10 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {activeTab === 'scraping' && (
+          <WebScrapingPanel />
         )}
 
         {activeTab === 'homepage' && (
