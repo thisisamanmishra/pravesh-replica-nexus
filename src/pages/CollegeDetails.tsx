@@ -365,93 +365,95 @@ const CollegeDetails = () => {
             </Tabs>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-            {/* Quick Info Card */}
-            <Card className="sticky top-4 shadow-lg border-0 bg-gradient-to-br from-white to-indigo-50/50">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-lg font-bold">Quick Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 pt-0">
-                <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Category</p>
-                  <Badge className="bg-blue-600 text-white capitalize font-semibold text-xs">
-                    {college.category}
-                  </Badge>
-                </div>
-                
-                <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-100 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Fee Range</p>
-                  <p className="font-bold text-green-600">
-                    {college.fees_range || '₹25L - 30L'}
-                  </p>
-                </div>
-                
-                <div className="p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Cutoff Information</p>
-                  <p className="font-semibold text-purple-600 text-sm">
-                    {college.cutoff_info || 'CAT 99+ percentile'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Sidebar - Fixed overlapping issue */}
+          <div className="lg:col-span-1">
+            <div className="space-y-6">
+              {/* Quick Info Card */}
+              <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-indigo-50/50">
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-lg font-bold">Quick Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-0">
+                  <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Category</p>
+                    <Badge className="bg-blue-600 text-white capitalize font-semibold text-xs">
+                      {college.category}
+                    </Badge>
+                  </div>
+                  
+                  <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-100 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Fee Range</p>
+                    <p className="font-bold text-green-600">
+                      {college.fees_range || '₹25L - 30L'}
+                    </p>
+                  </div>
+                  
+                  <div className="p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-1">Cutoff Information</p>
+                    <p className="font-semibold text-purple-600 text-sm">
+                      {college.cutoff_info || 'CAT 99+ percentile'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <Button 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                size="lg"
-              >
-                Apply Now
-              </Button>
-              
-              <Button 
-                onClick={() => setIsContactModalOpen(true)}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                size="lg"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Get in Touch
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                size="lg"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Visit Website
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                size="lg"
-              >
-                Download Brochure
-              </Button>
+              {/* Action Buttons - Fixed spacing */}
+              <div className="space-y-4">
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  size="lg"
+                >
+                  Apply Now
+                </Button>
+                
+                <Button 
+                  onClick={() => setIsContactModalOpen(true)}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  size="lg"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Get in Touch
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                  size="lg"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Visit Website
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                  size="lg"
+                >
+                  Download Brochure
+                </Button>
+              </div>
+
+              {/* Contact Info */}
+              <Card className="shadow-lg border-0">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-bold">Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Phone className="w-4 h-4 mr-3 flex-shrink-0" />
+                    <span>+91 98765 43210</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Mail className="w-4 h-4 mr-3 flex-shrink-0" />
+                    <span>info@college.edu</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Globe className="w-4 h-4 mr-3 flex-shrink-0" />
+                    <span>www.college.edu</span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-
-            {/* Contact Info */}
-            <Card className="shadow-lg border-0">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-bold">Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 pt-0">
-                <div className="flex items-center text-gray-600 text-sm">
-                  <Phone className="w-4 h-4 mr-2" />
-                  <span>+91 98765 43210</span>
-                </div>
-                <div className="flex items-center text-gray-600 text-sm">
-                  <Mail className="w-4 h-4 mr-2" />
-                  <span>info@college.edu</span>
-                </div>
-                <div className="flex items-center text-gray-600 text-sm">
-                  <Globe className="w-4 h-4 mr-2" />
-                  <span>www.college.edu</span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
