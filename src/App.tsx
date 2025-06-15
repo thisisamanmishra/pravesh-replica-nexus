@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -15,6 +14,7 @@ import Courses from "./pages/Courses";
 import RankPredictor from "./pages/RankPredictor";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import WbjeeDataUploader from "./pages/WbjeeDataUploader";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +40,14 @@ const App: React.FC = () => (
                     <AdminDashboard />
                   </ProtectedRoute>
                 } 
+              />
+              <Route 
+                path="/admin/wbjee-uploader"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <WbjeeDataUploader />
+                  </ProtectedRoute>
+                }
               />
               <Route path="*" element={<NotFound />} />
             </Routes>
