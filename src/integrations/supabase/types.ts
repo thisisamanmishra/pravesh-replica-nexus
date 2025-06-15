@@ -11,60 +11,99 @@ export type Database = {
     Tables: {
       colleges: {
         Row: {
+          accreditation: string | null
+          additional_images: Json | null
+          address: string | null
+          admission_process: string | null
+          awards: Json | null
+          campus_area: string | null
           category: string
           college_type: string
+          courses_offered: Json | null
           created_at: string
           cutoff_info: string | null
           description: string | null
+          email: string | null
           established: number | null
+          facilities: Json | null
           fees_range: string | null
           id: string
           image_url: string | null
           location: string
           name: string
           national_ranking: number | null
+          phone: string | null
+          placement_stats: Json | null
           rating: number | null
+          scholarships: Json | null
           total_courses: number | null
           total_students: number | null
           updated_at: string
+          website_url: string | null
           youtube_video_url: string | null
         }
         Insert: {
+          accreditation?: string | null
+          additional_images?: Json | null
+          address?: string | null
+          admission_process?: string | null
+          awards?: Json | null
+          campus_area?: string | null
           category: string
           college_type?: string
+          courses_offered?: Json | null
           created_at?: string
           cutoff_info?: string | null
           description?: string | null
+          email?: string | null
           established?: number | null
+          facilities?: Json | null
           fees_range?: string | null
           id?: string
           image_url?: string | null
           location: string
           name: string
           national_ranking?: number | null
+          phone?: string | null
+          placement_stats?: Json | null
           rating?: number | null
+          scholarships?: Json | null
           total_courses?: number | null
           total_students?: number | null
           updated_at?: string
+          website_url?: string | null
           youtube_video_url?: string | null
         }
         Update: {
+          accreditation?: string | null
+          additional_images?: Json | null
+          address?: string | null
+          admission_process?: string | null
+          awards?: Json | null
+          campus_area?: string | null
           category?: string
           college_type?: string
+          courses_offered?: Json | null
           created_at?: string
           cutoff_info?: string | null
           description?: string | null
+          email?: string | null
           established?: number | null
+          facilities?: Json | null
           fees_range?: string | null
           id?: string
           image_url?: string | null
           location?: string
           name?: string
           national_ranking?: number | null
+          phone?: string | null
+          placement_stats?: Json | null
           rating?: number | null
+          scholarships?: Json | null
           total_courses?: number | null
           total_students?: number | null
           updated_at?: string
+          website_url?: string | null
           youtube_video_url?: string | null
         }
         Relationships: []
