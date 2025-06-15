@@ -171,11 +171,11 @@ export default function WbjeeDataImportPanel() {
     (csvText.startsWith("college_id") || csvText.match(/cutoff|rank/i)) &&
     table !== "wbjee_cutoffs";
 
-  // NEW (below uploadResult and before return)
-  let uploadResultErrorsList = null;
+  // Clean uploadResultErrorsList logic for clarity and to prevent JSX errors
+  let uploadResultErrorsList: JSX.Element | null = null;
   if (
-    uploadResult && 
-    Array.isArray(uploadResult.errors) && 
+    uploadResult &&
+    Array.isArray(uploadResult.errors) &&
     uploadResult.errors.length > 0
   ) {
     uploadResultErrorsList = (
