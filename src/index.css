@@ -6,34 +6,24 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-
     --radius: 0.5rem;
-
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -42,46 +32,6 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 240 6% 8%;
-    --foreground: 210 40% 98%;
-    --card: 232 19% 16%;
-    --card-foreground: 210 40% 98%;
-    --popover: 232 19% 16%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 262 83% 71%;
-    --primary-foreground: 232 19% 16%;
-    --secondary: 222 15% 22%;
-    --secondary-foreground: 262 83% 71%;
-    --muted: 228 16% 14%;
-    --muted-foreground: 228 14% 75%;
-    --accent: 190 80% 54%;
-    --accent-foreground: 232 19% 16%;
-    --destructive: 349 69% 51%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 232 13% 21%;
-    --input: 228 12% 18%;
-    --ring: 262 83% 71%;
-    --sidebar-background: 222 15% 22%;
-    --sidebar-foreground: 228 14% 75%;
-    --sidebar-primary: 262 83% 71%;
-    --sidebar-primary-foreground: 232 19% 16%;
-    --sidebar-accent: 190 80% 54%;
-    --sidebar-accent-foreground: 232 19% 16%;
-    --sidebar-border: 228 12% 18%;
-    --sidebar-ring: 262 83% 71%;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    html {
-      color-scheme: dark;
-      background: var(--background);
-    }
-    body {
-      @apply bg-background text-foreground;
-    }
   }
 
   body {
@@ -93,78 +43,81 @@
   }
 }
 
-/* Override gradients and utilities for dark theme backgrounds */
-.bg-gradient-to-br.from-blue-50.to-indigo-100 {
-  background-image: linear-gradient(135deg, #232336 0%, #18181B 100%) !important;
-}
+/* Remove all dark theme & forced dark background/gradient overrides */
+/* Default light gradients from Tailwind */
 .bg-gradient-to-br.from-blue-50.to-indigo-100, 
 .bg-gradient-to-br.from-white.to-blue-50\/30,
 .bg-gradient-to-br.from-white.to-indigo-50\/50 {
-  background-image: linear-gradient(135deg, #232336 0%, #18181B 100%) !important;
+  background-image: linear-gradient(135deg, #ebf8ff 0%, #c7d2fe 100%) !important;
 }
 .bg-gradient-to-r.from-blue-600.to-indigo-600 {
-  background-image: linear-gradient(90deg, #8B5CF6 0%, #6366F1 100%) !important;
+  background-image: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%) !important;
 }
-.bg-gradient-to-r.from-green-500.to-emerald-600, 
-.bg-gradient-to-r.from-green-600.to-emerald-600 {
-  background-image: linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%) !important;
-}
+
+/* Bring back Tailwind colors for light utility classes */
 .bg-white,
 .bg-blue-50,
 .bg-blue-100,
 .bg-white\/10 {
-  background-color: #232336 !important;
+  background-color: #fff !important;
 }
 
-/* Modern card & shadow for dark */
+/* Card & shadow for light mode */
 .card,
 .shadow-xl,
 .shadow-lg,
 .shadow-md,
 .shadow-2xl {
-  background-color: #232336 !important;
+  background-color: #fff !important;
   border-radius: 1.25rem !important;
-  box-shadow: 0 6px 32px 0 rgba(30, 23, 57, 0.36) !important;
+  box-shadow: 0 6px 32px 0 rgba(30, 23, 57, 0.10) !important;
 }
 
-.text-gray-900, .text-gray-700, .text-gray-600 {
-  color: #e0defc !important;
+/* Default text colors */
+.text-gray-900 {
+  color: #111827 !important;
+}
+.text-gray-700 {
+  color: #374151 !important;
+}
+.text-gray-600 {
+  color: #4b5563 !important;
 }
 .text-blue-600 {
-  color: #8b5cf6 !important;
+  color: #2563eb !important;
 }
 .text-green-600 {
-  color: #22d3ee !important;
+  color: #059669 !important;
 }
 .text-purple-600 {
-  color: #c084fc !important;
+  color: #7c3aed !important;
 }
 .text-yellow-400 {
   color: #facc15 !important;
 }
 
-/* High contrast adjustments */
+/* Inputs */
 input, select, textarea {
-  background-color: #18181B !important;
-  color: #e0defc !important;
-  border-color: #37336d !important;
+  background-color: #fff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
 }
 input:focus, select:focus, textarea:focus {
-  outline: 2px solid #8b5cf6 !important;
+  outline: 2px solid #2563eb !important;
 }
 
 /* Button styles */
 button, .btn, .Button {
-  background-color: #8b5cf6 !important;
-  color: #18181B !important;
+  background-color: #2563eb !important;
+  color: #fff !important;
   border-radius: 0.5rem !important;
   transition: background 0.2s, color 0.2s;
 }
 button:hover, .btn:hover, .Button:hover {
-  background: #a78bfa !important;
+  background: #4f46e5 !important;
 }
 
-/* Enhanced animations for college page */
+/* The rest: utilities, animations, gradients, shimmer, etc. */
 @layer utilities {
   .animate-fade-in {
     animation: fade-in 0.8s ease-out forwards;

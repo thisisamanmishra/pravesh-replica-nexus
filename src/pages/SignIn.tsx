@@ -21,7 +21,7 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 dark">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -33,10 +33,10 @@ const SignIn = () => {
           </Link>
         </div>
 
-        <Card className="shadow-2xl bg-card border-0">
+        <Card className="shadow-2xl bg-white border-0">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center gradient-text">Welcome back</CardTitle>
-            <CardDescription className="text-center text-gray-400">
+            <CardDescription className="text-center text-gray-600">
               Sign in to your account to continue
             </CardDescription>
           </CardHeader>

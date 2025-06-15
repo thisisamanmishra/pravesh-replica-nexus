@@ -2,7 +2,6 @@
 import type { Config } from "tailwindcss";
 
 export default {
-	darkMode: "class", // Always prefer dark mode
 	content: [
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
@@ -62,16 +61,6 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				},
-				dark: {
-					bg: "#18181B",
-					bg2: "#232336",
-					surface: "#232336",
-					card: "#232336",
-					border: "#2a2a3b",
-					primary: "#8b5cf6",
-					accent: "#22d3ee",
-					destructive: "#ef4444"
 				}
 			},
 			borderRadius: {
