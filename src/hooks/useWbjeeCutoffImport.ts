@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useWbjeeReferenceMaps } from "@/hooks/useWbjeeColumnLookup";
 import { expectedCutoffsColumns } from "@/components/WbjeeColumnMapper";
@@ -69,38 +70,52 @@ export function useWbjeeCutoffImport() {
     return "Home State";
   }
 
+  // Updated: always fill in human name columns, upload even if UUIDs are null
   function transformRowsForDb(rows: any[], mapping: Record<string, string>) {
     const { collegeNameToId, branchNameToId } = refMaps;
     // Only these keys will be uploaded
     const allowedKeys = [
       "college_id",
+      "college_name",
       "branch_id",
+      "branch_name",
       "domicile",
       "category",
       "opening_rank",
       "closing_rank",
     ];
-    return rows.map(row => {
-      const collegeName = row[mapping["college_id"]]?.toLowerCase().trim();
-      const branchName = row[mapping["branch_id"]]?.toLowerCase().trim();
-      const college_id = collegeNameToId[collegeName] || null;
-      const branch_id = branchNameToId[branchName] || null;
-      const category = row[mapping["category"]];
-      const opening_rank = Number(row[mapping["opening_rank"]] ?? "") || null;
-      const closing_rank = Number(row[mapping["closing_rank"]] ?? "") || null;
-      let domicile = row[mapping["domicile"]];
-      domicile = normalizeDomicile(domicile);
+    return rows
+      .map(row => {
+        const collegeRawName = row[mapping["college_id"]] ? row[mapping["college_id"]].trim() : "";
+        const branchRawName = row[mapping["branch_id"]] ? row[mapping["branch_id"]].trim() : "";
 
-      // Build only fields allowed for upload
-      return {
-        college_id,
-        branch_id,
-        domicile,
-        category,
-        opening_rank,
-        closing_rank,
-      };
-    });
+        const collegeKey = collegeRawName.toLowerCase();
+        const branchKey = branchRawName.toLowerCase();
+        const college_id = collegeNameToId[collegeKey] || null;
+        const branch_id = branchNameToId[branchKey] || null;
+
+        const category = row[mapping["category"]];
+        const opening_rank = Number(row[mapping["opening_rank"]] ?? "") || null;
+        const closing_rank = Number(row[mapping["closing_rank"]] ?? "") || null;
+        let domicile = row[mapping["domicile"]];
+        domicile = normalizeDomicile(domicile);
+
+        // Build object, always include names
+        return {
+          college_id,
+          college_name: collegeRawName || null,
+          branch_id,
+          branch_name: branchRawName || null,
+          domicile,
+          category,
+          opening_rank,
+          closing_rank,
+        };
+      })
+      .filter(r =>
+        // Only skip rows where all allowed fields are null/empty
+        Object.values(r).some(val => val !== null && val !== "" && typeof val !== "undefined")
+      );
   }
 
   return {
