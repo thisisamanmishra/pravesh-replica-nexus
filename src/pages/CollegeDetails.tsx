@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Star, MapPin, Calendar, Users, BookOpen, ExternalLink, Play, MessageCircle, Award, GraduationCap, Clock, Phone, Mail, Globe, Building, TrendingUp, CheckCircle, Heart, Share2 } from 'lucide-react';
@@ -441,15 +440,26 @@ const CollegeDetails = () => {
                 <CardContent className="space-y-3 pt-0">
                   <div className="flex items-center text-gray-600 text-sm">
                     <Phone className="w-4 h-4 mr-3 flex-shrink-0" />
-                    <span>+91 98765 43210</span>
+                    <span>{college.phone ? college.phone : "Not available"}</span>
                   </div>
                   <div className="flex items-center text-gray-600 text-sm">
                     <Mail className="w-4 h-4 mr-3 flex-shrink-0" />
-                    <span>info@college.edu</span>
+                    <span>{college.email ? college.email : "Not available"}</span>
                   </div>
                   <div className="flex items-center text-gray-600 text-sm">
                     <Globe className="w-4 h-4 mr-3 flex-shrink-0" />
-                    <span>www.college.edu</span>
+                    {college.website_url ? (
+                      <a
+                        href={college.website_url.startsWith("http") ? college.website_url : `https://${college.website_url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline break-all"
+                      >
+                        {college.website_url}
+                      </a>
+                    ) : (
+                      <span>Not available</span>
+                    )}
                   </div>
                 </CardContent>
               </Card>
