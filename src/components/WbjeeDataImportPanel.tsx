@@ -171,6 +171,22 @@ export default function WbjeeDataImportPanel() {
     (csvText.startsWith("college_id") || csvText.match(/cutoff|rank/i)) &&
     table !== "wbjee_cutoffs";
 
+  // NEW (below uploadResult and before return)
+  let uploadResultErrorsList = null;
+  if (
+    uploadResult && 
+    Array.isArray(uploadResult.errors) && 
+    uploadResult.errors.length > 0
+  ) {
+    uploadResultErrorsList = (
+      <ul className="ml-4 list-disc">
+        {uploadResult.errors.map((e: string, i: number) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -272,13 +288,7 @@ college_id,branch_id,domicile,category,opening_rank,closing_rank
             }`}
           >
             <b>{uploadResult.message}</b>
-            {(Array.isArray(uploadResult.errors) && uploadResult.errors.length > 0) ? (
-              <ul className="ml-4 list-disc">
-                {uploadResult.errors.map((e: string, i: number) => (
-                  <li key={i}>{e}</li>
-                ))}
-              </ul>
-            ) : null}
+            {uploadResultErrorsList}
           </div>
         )}
       </CardContent>
