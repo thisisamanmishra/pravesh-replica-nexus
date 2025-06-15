@@ -180,12 +180,12 @@ const AdminDashboard = () => {
       rating: college.rating?.toString() || '',
       image_url: college.image_url || '',
       youtube_video_url: college.youtube_video_url || '',
-      additional_images: ['', '', ''],
-      website_url: '',
-      phone: '',
-      email: '',
-      address: '',
-      facilities: {
+      additional_images: college.additional_images ?? ['', '', ''],
+      website_url: college.website_url || '',
+      phone: college.phone || '',
+      email: college.email || '',
+      address: college.address || '',
+      facilities: college.facilities || {
         library: { available: true, rating: '4.5' },
         sports_complex: { available: true, rating: '4.2' },
         hostels: { available: true, rating: '4.0' },
@@ -193,17 +193,17 @@ const AdminDashboard = () => {
         cafeteria: { available: true, rating: '4.3' },
         wifi: { available: true, rating: '4.6' }
       },
-      courses_offered: [''],
-      placement_stats: {
+      courses_offered: college.courses_offered ?? [''],
+      placement_stats: college.placement_stats || {
         average_package: '',
         highest_package: '',
         placement_rate: ''
       },
-      accreditation: '',
-      awards: [''],
-      campus_area: '',
-      admission_process: '',
-      scholarships: ['']
+      accreditation: college.accreditation || '',
+      awards: college.awards ?? [''],
+      campus_area: college.campus_area || '',
+      admission_process: college.admission_process || '',
+      scholarships: college.scholarships ?? ['']
     });
     setShowAddCollege(true);
   };
@@ -225,7 +225,19 @@ const AdminDashboard = () => {
       cutoff_info: formData.cutoff_info || null,
       rating: formData.rating ? parseFloat(formData.rating) : null,
       image_url: formData.image_url || null,
-      youtube_video_url: formData.youtube_video_url || null
+      youtube_video_url: formData.youtube_video_url || null,
+      phone: formData.phone || null,
+      email: formData.email || null,
+      address: formData.address || null,
+      additional_images: formData.additional_images,
+      facilities: formData.facilities,
+      courses_offered: formData.courses_offered,
+      placement_stats: formData.placement_stats,
+      accreditation: formData.accreditation || null,
+      awards: formData.awards,
+      campus_area: formData.campus_area || null,
+      admission_process: formData.admission_process || null,
+      scholarships: formData.scholarships
     };
 
     try {
