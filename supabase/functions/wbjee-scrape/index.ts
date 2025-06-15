@@ -1,11 +1,10 @@
-
 /**
  * Supabase Edge Function: wbjee-scrape
  * Fetches NIC WBJEE cutoff tables server-side, parses HTML, returns cutoffs as structured JSON.
  * POST { url: string }
  * Returns: { success: boolean, cutoffs?: ParsedNicCutoff[], error?: string }
  */
-import { serve } from "https://esm.sh/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 // Minimal table parser for NIC WBJEE site
 function parseNicCutoffTable(html: string, year: number): any[] {
