@@ -101,16 +101,25 @@ serve(async (req) => {
     }
     const html = await resp.text();
     const cutoffRows = parseNicCutoffTable(html, year || new Date().getFullYear());
-    if (!cutoffRows.length)
+    if (!cutoffRows.length) {
+      // Add debug: try to show why parser failed
+      console.log("WBJEE Scrape Debug: No cutoff data found.");
+      // Output first few chars of HTML for debugging (avoid logging too much)
+      console.log("WBJEE Scrape Debug: Fetched HTML (truncated):", html.slice(0, 500));
       return new Response(
-        JSON.stringify({ success: false, error: "No cutoff data found in page" }),
+        JSON.stringify({
+          success: false,
+          error: "No cutoff data found in page. (Debug: Table not found or structure changed?)"
+        }),
         { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
     return new Response(
       JSON.stringify({ success: true, cutoffs: cutoffRows }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e: any) {
+    console.log("WBJEE Scrape Debug: Fatal error", e);
     return new Response(
       JSON.stringify({ success: false, error: e.message || "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
