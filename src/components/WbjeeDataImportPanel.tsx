@@ -7,6 +7,8 @@ import { useWbjeeCutoffImport } from "@/hooks/useWbjeeCutoffImport";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+console.log("[WbjeeDataImportPanel] Loaded for JSX error diagnosis");
+
 const tableOptions = [
   {
     value: "wbjee_colleges",
@@ -187,111 +189,114 @@ export default function WbjeeDataImportPanel() {
     );
   }
 
+  // Main render
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Data Import Panel</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleUpload} className="space-y-4">
-          <label className="block font-medium mb-1">
-            Select Table
-            <select
-              className="mt-1 w-full rounded px-3 py-2 border border-gray-300"
-              value={table}
-              onChange={(e) => setTable(e.target.value)}
-            >
-              {tableOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {showCutoffInputTip && (
-            <div className="bg-blue-50 text-blue-900 border-l-4 border-blue-400 p-3 rounded text-sm mb-2">
-              It looks like you're uploading Cutoff data. Please select <b>Cutoffs</b> in the dropdown above for this type of CSV.
-            </div>
-          )}
-          {parseAlert && (
-            <div className="bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-3 rounded text-sm mb-2">
-              {parseAlert}
-            </div>
-          )}
-          {showColumnMapper && table === "wbjee_cutoffs" && rawHeaders.length > 0 && (
-            <WbjeeColumnMapper
-              rawHeaders={rawHeaders}
-              mapping={columnMapping}
-              requiredColumns={expectedCutoffsColumns}
-              onChange={setColumnMapping}
-            />
-          )}
-          {uploadWarnings.length > 0 && (
-            <div className="bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-3 rounded text-sm mb-2">
-              <b>Mapping Warnings:</b>
-              <ul className="list-disc ml-4">
-                {uploadWarnings.map((w, i) => (
-                  <li key={i}>{w}</li>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Data Import Panel</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleUpload} className="space-y-4">
+            <label className="block font-medium mb-1">
+              Select Table
+              <select
+                className="mt-1 w-full rounded px-3 py-2 border border-gray-300"
+                value={table}
+                onChange={(e) => setTable(e.target.value)}
+              >
+                {tableOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
                 ))}
-              </ul>
-            </div>
-          )}
-          <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="mb-2">
-              <TabsTrigger value="csv">Paste CSV</TabsTrigger>
-              <TabsTrigger value="json">Paste JSON</TabsTrigger>
-              <TabsTrigger value="example">Show Example</TabsTrigger>
-            </TabsList>
-            <TabsContent value="csv">
-              <textarea
-                className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
-                value={csvText}
-                onChange={handleCsvChange}
-                placeholder="Paste CSV (comma, tab, or 2+ spaces as separator). If names have commas, use quotes. Example:
+              </select>
+            </label>
+            {showCutoffInputTip && (
+              <div className="bg-blue-50 text-blue-900 border-l-4 border-blue-400 p-3 rounded text-sm mb-2">
+                It looks like you're uploading Cutoff data. Please select <b>Cutoffs</b> in the dropdown above for this type of CSV.
+              </div>
+            )}
+            {parseAlert && (
+              <div className="bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-3 rounded text-sm mb-2">
+                {parseAlert}
+              </div>
+            )}
+            {showColumnMapper && table === "wbjee_cutoffs" && rawHeaders.length > 0 && (
+              <WbjeeColumnMapper
+                rawHeaders={rawHeaders}
+                mapping={columnMapping}
+                requiredColumns={expectedCutoffsColumns}
+                onChange={setColumnMapping}
+              />
+            )}
+            {uploadWarnings.length > 0 && (
+              <div className="bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-3 rounded text-sm mb-2">
+                <b>Mapping Warnings:</b>
+                <ul className="list-disc ml-4">
+                  {uploadWarnings.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <Tabs value={tab} onValueChange={setTab}>
+              <TabsList className="mb-2">
+                <TabsTrigger value="csv">Paste CSV</TabsTrigger>
+                <TabsTrigger value="json">Paste JSON</TabsTrigger>
+                <TabsTrigger value="example">Show Example</TabsTrigger>
+              </TabsList>
+              <TabsContent value="csv">
+                <textarea
+                  className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
+                  value={csvText}
+                  onChange={handleCsvChange}
+                  placeholder="Paste CSV (comma, tab, or 2+ spaces as separator). If names have commas, use quotes. Example:
 college_id,branch_id,domicile,category,opening_rank,closing_rank
 \"Cooch Behar Government Engineering College, Cooch Behar\",Civil Engineering,Home State,OBC-A,31464,37544"
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                Columns should be separated by <b>comma, tab, or at least two spaces</b>. For names containing commas, enclose the value in quotes.
-                <br />
-                <b>Tip:</b> Export using Excel/Sheets' CSV to guarantee correct formatting, or double-check delimiters in your pasted data.
-              </div>
-            </TabsContent>
-            <TabsContent value="json">
-              <textarea
-                className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
-                value={jsonText}
-                onChange={(e) => setJsonText(e.target.value)}
-                placeholder='Paste a JSON array of objects like [{"college_id":"...", ...}]'
-              />
-            </TabsContent>
-            <TabsContent value="example">
-              <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">
-                {JSON.stringify(currentOption?.example, null, 2)}
-              </pre>
-            </TabsContent>
-          </Tabs>
-          <Button
-            disabled={loading || (!csvText && !jsonText) || tab === "example"}
-            type="submit"
-            className="w-full"
-          >
-            {loading ? "Uploading..." : "Upload Data"}
-          </Button>
-        </form>
-        {uploadResult && (
-          <div
-            className={`rounded p-3 mt-2 ${
-              uploadResult.success
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            <b>{uploadResult.message}</b>
-            {uploadResultErrorsList}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  Columns should be separated by <b>comma, tab, or at least two spaces</b>. For names containing commas, enclose the value in quotes.
+                  <br />
+                  <b>Tip:</b> Export using Excel/Sheets' CSV to guarantee correct formatting, or double-check delimiters in your pasted data.
+                </div>
+              </TabsContent>
+              <TabsContent value="json">
+                <textarea
+                  className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder='Paste a JSON array of objects like [{"college_id":"...", ...}]'
+                />
+              </TabsContent>
+              <TabsContent value="example">
+                <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">
+                  {JSON.stringify(currentOption?.example, null, 2)}
+                </pre>
+              </TabsContent>
+            </Tabs>
+            <Button
+              disabled={loading || (!csvText && !jsonText) || tab === "example"}
+              type="submit"
+              className="w-full"
+            >
+              {loading ? "Uploading..." : "Upload Data"}
+            </Button>
+          </form>
+          {uploadResult && (
+            <div
+              className={`rounded p-3 mt-2 ${
+                uploadResult.success
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              <b>{uploadResult.message}</b>
+              {uploadResultErrorsList}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
