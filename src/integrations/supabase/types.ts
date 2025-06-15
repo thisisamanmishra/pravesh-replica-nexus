@@ -237,6 +237,173 @@ export type Database = {
         }
         Relationships: []
       }
+      wbjee_branches: {
+        Row: {
+          branch_name: string
+          college_id: string | null
+          created_at: string | null
+          degree: string | null
+          id: string
+          intake: number | null
+          is_core: boolean | null
+        }
+        Insert: {
+          branch_name: string
+          college_id?: string | null
+          created_at?: string | null
+          degree?: string | null
+          id?: string
+          intake?: number | null
+          is_core?: boolean | null
+        }
+        Update: {
+          branch_name?: string
+          college_id?: string | null
+          created_at?: string | null
+          degree?: string | null
+          id?: string
+          intake?: number | null
+          is_core?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wbjee_branches_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "wbjee_colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wbjee_colleges: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          email: string | null
+          established: number | null
+          id: string
+          location: string
+          logo_url: string | null
+          name: string
+          phone: string | null
+          type: string
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          established?: number | null
+          id?: string
+          location: string
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          type: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          email?: string | null
+          established?: number | null
+          id?: string
+          location?: string
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          type?: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      wbjee_counselling_schedule: {
+        Row: {
+          event: string
+          event_date: string
+          id: string
+          year: number
+        }
+        Insert: {
+          event: string
+          event_date: string
+          id?: string
+          year?: number
+        }
+        Update: {
+          event?: string
+          event_date?: string
+          id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      wbjee_cutoffs: {
+        Row: {
+          branch_id: string | null
+          category: string
+          closing_rank: number | null
+          college_id: string | null
+          created_at: string | null
+          domicile: string | null
+          id: string
+          opening_rank: number | null
+          quota: string | null
+          round: number
+          year: number
+        }
+        Insert: {
+          branch_id?: string | null
+          category: string
+          closing_rank?: number | null
+          college_id?: string | null
+          created_at?: string | null
+          domicile?: string | null
+          id?: string
+          opening_rank?: number | null
+          quota?: string | null
+          round: number
+          year: number
+        }
+        Update: {
+          branch_id?: string | null
+          category?: string
+          closing_rank?: number | null
+          college_id?: string | null
+          created_at?: string | null
+          domicile?: string | null
+          id?: string
+          opening_rank?: number | null
+          quota?: string | null
+          round?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wbjee_cutoffs_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "wbjee_branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wbjee_cutoffs_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "wbjee_colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

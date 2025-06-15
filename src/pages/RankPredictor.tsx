@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator } from 'lucide-react';
@@ -7,6 +6,8 @@ import PredictorForm from '@/components/predictor/PredictorForm';
 import PredictorInstructions from '@/components/predictor/PredictorInstructions';
 import ResultFilters from '@/components/predictor/ResultFilters';
 import PredictionResults from '@/components/predictor/PredictionResults';
+import WbjeePredictorForm from '@/components/predictor/WbjeePredictorForm';
+import WbjeePredictionResults from '@/components/predictor/WbjeePredictionResults';
 
 interface PredictionResult {
   id: string;
@@ -45,6 +46,8 @@ const RankPredictor = () => {
   const [collegeType, setCollegeType] = useState('');
   const [feeRange, setFeeRange] = useState([0, 500000]);
   const [examType, setExamType] = useState('');
+  const [wbjeePrediction, setWbjeePrediction] = useState<any>(null);
+  const [selectedExamType, setSelectedExamType] = useState<string>("jee-main");
 
   // Real-time prediction algorithm
   const calculatePredictions = (formData: FormData) => {
@@ -200,6 +203,20 @@ const RankPredictor = () => {
     }, 1500);
   };
 
+  // Main handler for WBJEE form
+  const handleWbjeePredict = (form: { rank: string; category: string; domicile: string }) => {
+    setLoading(true);
+    setTimeout(() => {
+      setWbjeePrediction({
+        rank: Number(form.rank),
+        category: form.category,
+        domicile: form.domicile,
+      });
+      setLoading(false);
+      setActiveTab('results');
+    }, 1200);
+  };
+
   // Real-time filtering
   useEffect(() => {
     let filtered = predictions;
@@ -250,14 +267,32 @@ const RankPredictor = () => {
           <div className="flex justify-center">
             <TabsList className="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="predictor">Predictor</TabsTrigger>
-              <TabsTrigger value="results">Results ({filteredPredictions.length})</TabsTrigger>
+              <TabsTrigger value="results">Results</TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="predictor">
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-1">
-                <PredictorForm onPredict={handlePredict} loading={loading} />
+                <div className="space-y-4">
+                  <label htmlFor="exams" className="block font-medium text-gray-700 mb-1">Exam Type *</label>
+                  <select
+                    id="exams"
+                    value={selectedExamType}
+                    onChange={e => setSelectedExamType(e.target.value)}
+                    className="w-full rounded px-3 py-2 border border-gray-300 mb-4"
+                  >
+                    <option value="jee-main">JEE Main</option>
+                    <option value="jee-advanced">JEE Advanced</option>
+                    <option value="wbjee">WBJEE</option>
+                  </select>
+                  {/* Show custom forms based on selected exam */}
+                  {selectedExamType === "wbjee" ? (
+                    <WbjeePredictorForm onPredict={handleWbjeePredict} loading={loading} />
+                  ) : (
+                    <PredictorForm onPredict={handlePredict} loading={loading} />
+                  )}
+                </div>
               </div>
               <div className="lg:col-span-2">
                 <PredictorInstructions />
@@ -266,18 +301,15 @@ const RankPredictor = () => {
           </TabsContent>
 
           <TabsContent value="results">
-            {predictions.length > 0 && (
-              <div className="space-y-6">
-                <ResultFilters
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  collegeType={collegeType}
-                  setCollegeType={setCollegeType}
-                  feeRange={feeRange}
-                  setFeeRange={setFeeRange}
-                  selectedBranches={selectedBranches}
-                  setSelectedBranches={setSelectedBranches}
-                />
+            {(selectedExamType === "wbjee" && wbjeePrediction) ? (
+              <WbjeePredictionResults
+                userRank={wbjeePrediction.rank}
+                category={wbjeePrediction.category}
+                domicile={wbjeePrediction.domicile}
+              />
+            ) : (
+              <div>
+                {/* fallback/results for JEE etc */}
                 <PredictionResults
                   predictions={predictions}
                   filteredPredictions={filteredPredictions}
@@ -285,15 +317,6 @@ const RankPredictor = () => {
                   onBackToPredictor={() => setActiveTab('predictor')}
                 />
               </div>
-            )}
-            
-            {predictions.length === 0 && (
-              <PredictionResults
-                predictions={predictions}
-                filteredPredictions={filteredPredictions}
-                examType={examType}
-                onBackToPredictor={() => setActiveTab('predictor')}
-              />
             )}
           </TabsContent>
         </Tabs>
