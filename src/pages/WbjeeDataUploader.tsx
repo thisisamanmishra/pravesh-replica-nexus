@@ -119,6 +119,12 @@ export default function WbjeeDataUploader() {
   const [scrapeUrl, setScrapeUrl] = useState("");
   const [scrapeTab, setScrapeTab] = useState("csv"); // csv, json, example, scrape
   const [showColumnMapper, setShowColumnMapper] = useState(false);
+
+  // ** Add these hooks to fix the errors **
+  const [parsedRows, setParsedRows] = useState<any[]>([]);
+  const [rawHeaders, setRawHeaders] = useState<string[]>([]);
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+
   const { loading: scraping, cutoffs, error: scrapeError, fetchCutoff } = useScrapeNicWbjeeCutoff();
   const { toast } = useToast();
 
