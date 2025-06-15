@@ -119,7 +119,7 @@ export default function WbjeeDataUploader() {
       if (records.length === 0) throw new Error("No records to upload");
       // Insert to Supabase
       const { error, count } = await supabase
-        .from(table)
+        .from(table as "wbjee_colleges" | "wbjee_branches" | "wbjee_cutoffs")
         .insert(records, { count: "exact" });
       if (error) throw error;
       setUploadResult({
