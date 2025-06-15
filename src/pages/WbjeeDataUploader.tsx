@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,8 @@ import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { useScrapeNicWbjeeCutoff } from "@/hooks/useScrapeNicWbjeeCutoff";
+import { useToast } from "@/hooks/use-toast";
 
 interface UploadResult {
   success: boolean;
@@ -86,6 +87,10 @@ export default function WbjeeDataUploader() {
   const [jsonText, setJsonText] = useState("");
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [scrapeUrl, setScrapeUrl] = useState("");
+  const [scrapeTab, setScrapeTab] = useState("csv"); // csv, json, example, scrape
+  const { loading: scraping, cutoffs, error: scrapeError, fetchCutoff } = useScrapeNicWbjeeCutoff();
+  const { toast } = useToast();
 
   if (!isAdmin) {
     return (
@@ -139,6 +144,54 @@ export default function WbjeeDataUploader() {
     setLoading(false);
   }
 
+  // New: Handler for scraping NIC cutoff data and importing to DB
+  async function handleImportScraped() {
+    setUploadResult(null);
+    setLoading(true);
+    try {
+      // Query for the selected college in wbjee_colleges table
+      const collegeName = cutoffs[0]?.college_name;
+      const { data: colleges } = await supabase
+        .from("wbjee_colleges")
+        .select("*")
+        .ilike("name", `%${collegeName}%`);
+      if (!colleges || !colleges[0]?.id) throw new Error("College not found. Please add the college first.");
+      const college_id = colleges[0].id;
+
+      // Map each row to Supabase structure
+      const records = cutoffs.map(c => ({
+        college_id,
+        branch_id: null, // Optional: enhance by mapping branch
+        year: c.year,
+        round: c.round,
+        category: c.category,
+        opening_rank: c.opening_rank,
+        closing_rank: c.closing_rank,
+        domicile: c.domicile,
+        quota: c.quota,
+      }));
+
+      const { error, count } = await supabase
+        .from("wbjee_cutoffs")
+        .insert(records, { count: "exact" });
+
+      if (error) throw error;
+      setUploadResult({
+        success: true,
+        message: `Imported ${count || records.length} cutoffs for ${collegeName}`,
+        inserted: count || records.length,
+      });
+      setScrapeUrl("");
+    } catch (err: any) {
+      setUploadResult({
+        success: false,
+        message: "Import failed",
+        errors: [err.message || "Unknown error"],
+      });
+    }
+    setLoading(false);
+  }
+
   const currentOption = tableOptions.find((t) => t.value === table);
 
   return (
@@ -150,12 +203,14 @@ export default function WbjeeDataUploader() {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleUpload} className="space-y-4">
+              {/* Add data source selection between CSV/JSON/Example/Scrape NIC */}
               <label className="block font-medium mb-1">
                 Select Table
                 <select
                   className="mt-1 w-full rounded px-3 py-2 border border-gray-300"
                   value={table}
                   onChange={(e) => setTable(e.target.value)}
+                  disabled={scrapeTab === "scrape"}
                 >
                   {tableOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -164,11 +219,12 @@ export default function WbjeeDataUploader() {
                   ))}
                 </select>
               </label>
-              <Tabs value={tab} onValueChange={setTab}>
+              <Tabs value={scrapeTab} onValueChange={setScrapeTab}>
                 <TabsList className="mb-2">
                   <TabsTrigger value="csv">Paste CSV</TabsTrigger>
                   <TabsTrigger value="json">Paste JSON</TabsTrigger>
                   <TabsTrigger value="example">Show Example</TabsTrigger>
+                  <TabsTrigger value="scrape">Scrape WBJEE NIC Website</TabsTrigger>
                 </TabsList>
                 <TabsContent value="csv">
                   <textarea
@@ -191,14 +247,83 @@ export default function WbjeeDataUploader() {
                     {JSON.stringify(currentOption?.example, null, 2)}
                   </pre>
                 </TabsContent>
+                <TabsContent value="scrape">
+                  <div className="space-y-2">
+                    <label className="block font-medium mb-1">
+                      WBJEE NIC Cutoff Page URL
+                      <input
+                        type="url"
+                        className="w-full mt-1 rounded px-3 py-2 border border-gray-300"
+                        value={scrapeUrl}
+                        onChange={(e) => setScrapeUrl(e.target.value)}
+                        placeholder="https://admissions.nic.in/admiss/admissions/orcrjacd/134112421"
+                        disabled={scraping}
+                      />
+                    </label>
+                    <Button
+                      type="button"
+                      disabled={!scrapeUrl || scraping}
+                      onClick={() => fetchCutoff(scrapeUrl)}
+                    >
+                      {scraping ? "Scraping..." : "Scrape Data"}
+                    </Button>
+                    {scrapeError && (
+                      <div className="my-2 text-sm text-red-600">{scrapeError}</div>
+                    )}
+                    {cutoffs.length > 0 && (
+                      <div className="my-2">
+                        <h4 className="font-semibold mb-2">
+                          Preview: {cutoffs.length} rows
+                        </h4>
+                        <div className="max-h-48 overflow-y-auto border rounded bg-gray-50 text-xs">
+                          <table className="w-full">
+                            <thead>
+                              <tr>
+                                <th>Branch</th>
+                                <th>Cat</th>
+                                <th>Round</th>
+                                <th>Quota</th>
+                                <th>Open</th>
+                                <th>Close</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {cutoffs.slice(0, 15).map((c, i) => (
+                                <tr key={i}>
+                                  <td>{c.branch_name}</td>
+                                  <td>{c.category}</td>
+                                  <td>{c.round}</td>
+                                  <td>{c.quota}</td>
+                                  <td>{c.opening_rank}</td>
+                                  <td>{c.closing_rank}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <Button
+                          type="button"
+                          className="mt-2 w-full"
+                          onClick={handleImportScraped}
+                          disabled={loading}
+                        >
+                          {loading ? "Importing..." : "Import To Database"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
               </Tabs>
-              <Button
-                disabled={loading || (!csvText && !jsonText) || tab === "example"}
-                type="submit"
-                className="w-full"
-              >
-                {loading ? "Uploading..." : "Upload Data"}
-              </Button>
+              {/* Only show for non-scrape tabs */}
+              {scrapeTab !== "scrape" && (
+                <Button
+                  disabled={loading || (!csvText && !jsonText) || scrapeTab === "example"}
+                  type="submit"
+                  className="w-full"
+                >
+                  {loading ? "Uploading..." : "Upload Data"}
+                </Button>
+              )}
             </form>
             {uploadResult && (
               <div
