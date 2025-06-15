@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -46,52 +45,123 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 240 6% 8%;
     --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
+    --card: 232 19% 16%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
+    --popover: 232 19% 16%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
+    --primary: 262 83% 71%;
+    --primary-foreground: 232 19% 16%;
+    --secondary: 222 15% 22%;
+    --secondary-foreground: 262 83% 71%;
+    --muted: 228 16% 14%;
+    --muted-foreground: 228 14% 75%;
+    --accent: 190 80% 54%;
+    --accent-foreground: 232 19% 16%;
+    --destructive: 349 69% 51%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 232 13% 21%;
+    --input: 228 12% 18%;
+    --ring: 262 83% 71%;
+    --sidebar-background: 222 15% 22%;
+    --sidebar-foreground: 228 14% 75%;
+    --sidebar-primary: 262 83% 71%;
+    --sidebar-primary-foreground: 232 19% 16%;
+    --sidebar-accent: 190 80% 54%;
+    --sidebar-accent-foreground: 232 19% 16%;
+    --sidebar-border: 228 12% 18%;
+    --sidebar-ring: 262 83% 71%;
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
+  @media (prefers-color-scheme: dark) {
+    html {
+      color-scheme: dark;
+      background: var(--background);
+    }
+    body {
+      @apply bg-background text-foreground;
+    }
   }
 
   body {
     @apply bg-background text-foreground;
   }
+
+  * {
+    @apply border-border;
+  }
+}
+
+/* Override gradients and utilities for dark theme backgrounds */
+.bg-gradient-to-br.from-blue-50.to-indigo-100 {
+  background-image: linear-gradient(135deg, #232336 0%, #18181B 100%) !important;
+}
+.bg-gradient-to-br.from-blue-50.to-indigo-100, 
+.bg-gradient-to-br.from-white.to-blue-50\/30,
+.bg-gradient-to-br.from-white.to-indigo-50\/50 {
+  background-image: linear-gradient(135deg, #232336 0%, #18181B 100%) !important;
+}
+.bg-gradient-to-r.from-blue-600.to-indigo-600 {
+  background-image: linear-gradient(90deg, #8B5CF6 0%, #6366F1 100%) !important;
+}
+.bg-gradient-to-r.from-green-500.to-emerald-600, 
+.bg-gradient-to-r.from-green-600.to-emerald-600 {
+  background-image: linear-gradient(90deg, #22d3ee 0%, #06b6d4 100%) !important;
+}
+.bg-white,
+.bg-blue-50,
+.bg-blue-100,
+.bg-white\/10 {
+  background-color: #232336 !important;
+}
+
+/* Modern card & shadow for dark */
+.card,
+.shadow-xl,
+.shadow-lg,
+.shadow-md,
+.shadow-2xl {
+  background-color: #232336 !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 6px 32px 0 rgba(30, 23, 57, 0.36) !important;
+}
+
+.text-gray-900, .text-gray-700, .text-gray-600 {
+  color: #e0defc !important;
+}
+.text-blue-600 {
+  color: #8b5cf6 !important;
+}
+.text-green-600 {
+  color: #22d3ee !important;
+}
+.text-purple-600 {
+  color: #c084fc !important;
+}
+.text-yellow-400 {
+  color: #facc15 !important;
+}
+
+/* High contrast adjustments */
+input, select, textarea {
+  background-color: #18181B !important;
+  color: #e0defc !important;
+  border-color: #37336d !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid #8b5cf6 !important;
+}
+
+/* Button styles */
+button, .btn, .Button {
+  background-color: #8b5cf6 !important;
+  color: #18181B !important;
+  border-radius: 0.5rem !important;
+  transition: background 0.2s, color 0.2s;
+}
+button:hover, .btn:hover, .Button:hover {
+  background: #a78bfa !important;
 }
 
 /* Enhanced animations for college page */
