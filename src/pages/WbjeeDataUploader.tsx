@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useScrapeNicWbjeeCutoff } from "@/hooks/useScrapeNicWbjeeCutoff";
 import { useToast } from "@/hooks/use-toast";
+import WbjeeColumnMapper from "@/components/WbjeeColumnMapper";
+import { useWbjeeReferenceMaps } from "@/hooks/useWbjeeColumnLookup";
 
 interface UploadResult {
   success: boolean;
@@ -67,6 +69,19 @@ const tableOptions = [
   },
 ];
 
+// Add expected columns for the cutoffs upload
+const expectedCutoffsColumns = [
+  { key: "college_id", label: "Institute (college_id)" },
+  { key: "branch_id", label: "Program/Branch (branch_id)" },
+  { key: "category", label: "Category" },
+  { key: "opening_rank", label: "Opening Rank" },
+  { key: "closing_rank", label: "Closing Rank" },
+  { key: "domicile", label: "Domicile" },
+  { key: "quota", label: "Quota" },
+  { key: "round", label: "Counseling Round" },
+  { key: "year", label: "Year" },
+];
+
 function parseCSV(text: string) {
   const [headerLine, ...lines] = text
     .split("\n")
@@ -79,6 +94,20 @@ function parseCSV(text: string) {
   });
 }
 
+function parseFlexibleCSV(text: string) {
+  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length === 0) return { rows: [], headers: [] };
+  // Split on comma or tab. Assume all rows use the same delimiter.
+  const delimiter = lines[0].includes("\t") ? "\t" : ",";
+  const headers = lines[0].split(delimiter).map(h => h.trim());
+  const rows = lines.slice(1).map(line => {
+    const values = line.split(delimiter).map(v => v.trim());
+    return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+  });
+  return { rows, headers };
+}
+
+// Add to main component
 export default function WbjeeDataUploader() {
   const { user, isAdmin } = useAuth();
   const [table, setTable] = useState(tableOptions[0].value);
@@ -89,6 +118,7 @@ export default function WbjeeDataUploader() {
   const [loading, setLoading] = useState(false);
   const [scrapeUrl, setScrapeUrl] = useState("");
   const [scrapeTab, setScrapeTab] = useState("csv"); // csv, json, example, scrape
+  const [showColumnMapper, setShowColumnMapper] = useState(false);
   const { loading: scraping, cutoffs, error: scrapeError, fetchCutoff } = useScrapeNicWbjeeCutoff();
   const { toast } = useToast();
 
@@ -107,6 +137,76 @@ export default function WbjeeDataUploader() {
     );
   }
 
+  // Bring in the lookup maps for college and branch names
+  const { collegeNameToId, branchNameToId, collegesLoading, branchesLoading } = useWbjeeReferenceMaps();
+
+  // Helper to normalize CSV headers (trim, keep original case)
+  function guessMap(headers: string[]) {
+    // Do very basic best-match suggestion
+    const mapping: Record<string, string> = {};
+    for (const field of expectedCutoffsColumns) {
+      // try exact, then fuzzy (ignoring case/space)
+      let match = headers.find(h => h.replace(/[^a-zA-Z]/g, "").toLowerCase() === field.label.replace(/[^a-zA-Z]/g, "").toLowerCase());
+      if (!match) {
+        // try by keywords
+        for (const h of headers) {
+          if (field.label.toLowerCase().includes(h.toLowerCase()) || h.toLowerCase().includes(field.label.toLowerCase())) {
+            match = h;
+            break;
+          }
+        }
+      }
+      if (match) mapping[field.key] = match;
+    }
+    return mapping;
+  }
+
+  // Intercept CSV paste to suggest mapping if columns don't match
+  function onCsvTextChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setCsvText(e.target.value);
+    const { rows, headers } = parseFlexibleCSV(e.target.value);
+    setParsedRows(rows);
+    setRawHeaders(headers);
+    setColumnMapping(guessMap(headers));
+    setShowColumnMapper(true); // always show on parse now
+  }
+
+  // Prepare data using column mapping and lookups
+  function transformRowsForDb(rows: any[], mapping: Record<string, string>) {
+    return rows.map(row => {
+      // College/branch id lookup
+      const collegeName = row[mapping["college_id"]]?.toLowerCase().trim();
+      const branchName = row[mapping["branch_id"]]?.toLowerCase().trim();
+      const college_id = collegeNameToId[collegeName] || null;
+      const branch_id = branchNameToId[branchName] || null;
+      // Parse numbers
+      const opening_rank = Number(row[mapping["opening_rank"]] ?? "") || null;
+      const closing_rank = Number(row[mapping["closing_rank"]] ?? "") || null;
+
+      // Domicile fallback
+      let domicile = row[mapping["domicile"]];
+      if (!domicile && row["Quota"]?.toLowerCase().includes("home")) {
+        domicile = "Home";
+      }
+
+      // Round/year fallback (can prompt user to add later)
+      const round = Number(row[mapping["round"]] ?? "1") || 1;
+      const year = Number(row[mapping["year"]] ?? "") || new Date().getFullYear();
+
+      return {
+        college_id,
+        branch_id,
+        category: row[mapping["category"]],
+        opening_rank,
+        closing_rank,
+        domicile: domicile || "Home",
+        quota: row[mapping["quota"]] || "",
+        round,
+        year,
+      };
+    });
+  }
+
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     setUploadResult(null);
@@ -114,12 +214,31 @@ export default function WbjeeDataUploader() {
     let records: any[] = [];
     try {
       if (tab === "csv") {
-        records = parseCSV(csvText);
+        // If mapping is set, use enhanced parser & mapping
+        if (showColumnMapper && parsedRows.length > 0 && table === "wbjee_cutoffs") {
+          const mapped = transformRowsForDb(parsedRows, columnMapping);
+          // Warn about missing college/branch IDs
+          if (mapped.some(r => !r.college_id || !r.branch_id)) {
+            setUploadResult({
+              success: false,
+              message: "Upload failed",
+              errors: [
+                "Some rows could not match college/branch names to IDs.",
+                "Check mapping or add the required institutions/branches first.",
+              ],
+            });
+            setLoading(false);
+            return;
+          }
+          records = mapped;
+        } else {
+          // Legacy: use built-in CSV parser
+          records = parseCSV(csvText);
+        }
       } else {
         records = JSON.parse(jsonText);
         if (!Array.isArray(records)) throw new Error("JSON must be an array");
       }
-      // Remove empty records
       records = records.filter((r) => Object.values(r).some((v) => v));
       if (records.length === 0) throw new Error("No records to upload");
       // Insert to Supabase
@@ -134,6 +253,10 @@ export default function WbjeeDataUploader() {
       });
       setCsvText("");
       setJsonText("");
+      setShowColumnMapper(false);
+      setParsedRows([]);
+      setRawHeaders([]);
+      setColumnMapping({});
     } catch (err: any) {
       setUploadResult({
         success: false,
@@ -219,6 +342,15 @@ export default function WbjeeDataUploader() {
                   ))}
                 </select>
               </label>
+              {/* column mapper preview (shown for cutoffs/csv) */}
+              {showColumnMapper && table === "wbjee_cutoffs" && rawHeaders.length > 0 && (
+                <WbjeeColumnMapper
+                  rawHeaders={rawHeaders}
+                  mapping={columnMapping}
+                  requiredColumns={expectedCutoffsColumns}
+                  onChange={setColumnMapping}
+                />
+              )}
               <Tabs value={scrapeTab} onValueChange={setScrapeTab}>
                 <TabsList className="mb-2">
                   <TabsTrigger value="csv">Paste CSV</TabsTrigger>
@@ -230,8 +362,8 @@ export default function WbjeeDataUploader() {
                   <textarea
                     className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
                     value={csvText}
-                    onChange={(e) => setCsvText(e.target.value)}
-                    placeholder="Paste CSV here..."
+                    onChange={onCsvTextChange}
+                    placeholder="Paste CSV (or Excel as CSV) here..."
                   />
                 </TabsContent>
                 <TabsContent value="json">
