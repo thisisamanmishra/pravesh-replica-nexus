@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -66,6 +65,7 @@ export default function WbjeeDataImportPanel() {
   const [jsonText, setJsonText] = useState("");
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadWarnings, setUploadWarnings] = useState<string[]>([]);
 
   const {
     csvText, setCsvText,
@@ -81,26 +81,42 @@ export default function WbjeeDataImportPanel() {
 
   const currentOption = tableOptions.find((t) => t.value === table);
 
+  // Add helper to compute row mapping issues for cutoffs
+  const unmatchedRows = useMemo(() => {
+    if (!parsedRows.length || !showColumnMapper || table !== "wbjee_cutoffs") return [];
+    const mapped = transformRowsForDb(parsedRows, columnMapping);
+    return mapped
+      .map((r, idx) => {
+        let msgs: string[] = [];
+        if (!r.college_id && r.college_name)
+          msgs.push(`Row ${idx + 2}: College "${r.college_name}" not found`);
+        if (!r.branch_id && r.branch_name)
+          msgs.push(`Row ${idx + 2}: Branch "${r.branch_name}" not found`);
+        return msgs;
+      })
+      .flat()
+      .filter(Boolean);
+  }, [parsedRows, showColumnMapper, table, columnMapping, transformRowsForDb]);
+
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     setUploadResult(null);
     setLoading(true);
+    setUploadWarnings([]);
     let records: any[] = [];
     try {
       if (tab === "csv") {
         if (showColumnMapper && parsedRows.length > 0 && table === "wbjee_cutoffs") {
           const mapped = transformRowsForDb(parsedRows, columnMapping);
-          if (mapped.some(r => !r.college_id || !r.branch_id)) {
-            setUploadResult({
-              success: false,
-              message: "Upload failed",
-              errors: [
-                "Some rows could not match college/branch names to IDs.",
-                "Check mapping or add the required institutions/branches first.",
-              ],
-            });
-            setLoading(false);
-            return;
+          // Warn about unmatched IDs, but allow upload
+          const unmapped = mapped.filter(r => !r.college_id || !r.branch_id);
+          if (unmapped.length > 0) {
+            setUploadWarnings([
+              "Some rows could not match college/branch names to IDs.",
+              "Upload will proceed with college/branch names only for those rows.",
+              ...unmatchedRows,
+              "Ensure mapping is correct or add the missing institutions/branches to the database first."
+            ]);
           }
           records = mapped;
         } else {
@@ -167,12 +183,21 @@ export default function WbjeeDataImportPanel() {
               onChange={setColumnMapping}
             />
           )}
+          {uploadWarnings.length > 0 && (
+            <div className="bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-3 rounded text-sm mb-2">
+              <b>Mapping Warnings:</b>
+              <ul className="list-disc ml-4">
+                {uploadWarnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="mb-2">
               <TabsTrigger value="csv">Paste CSV</TabsTrigger>
               <TabsTrigger value="json">Paste JSON</TabsTrigger>
               <TabsTrigger value="example">Show Example</TabsTrigger>
-              {/* Scraping now lives elsewhere */}
             </TabsList>
             <TabsContent value="csv">
               <textarea
