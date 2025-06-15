@@ -6,19 +6,12 @@
  */
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
-// Minimal table parser for NIC WBJEE site
+// Updated parser for the new WBJEE cutoff table structure
 function parseNicCutoffTable(html: string, year: number): any[] {
   const tableRegex = /<table[\s\S]*?<\/table>/gi;
-  const h1Match = html.match(/<h1[^>]*>([^<]*)<\/h1>/i);
-  let collegeName = h1Match ? h1Match[1].trim() : "";
-  if (!collegeName) {
-    const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-    if (titleMatch) collegeName = titleMatch[1].trim();
-  }
   const tables = html.match(tableRegex);
   if (!tables) return [];
   let result: any[] = [];
-  const closingHeadIdx = ["closing rank", "closing", "closing rank(gmr)", "closing(gmr)","closing rank (gmr)"];
 
   for (const tableHtml of tables) {
     // Extract table header row (assume first <tr>)
@@ -27,34 +20,50 @@ function parseNicCutoffTable(html: string, year: number): any[] {
     const headers = [...headerMatch[1].matchAll(/<th[^>]*>(.*?)<\/th>/gi)].map((m) =>
       m[1].replace(/<[^>]+>/g, "").trim().toLowerCase()
     );
-    if (!headers.length || !headers.find((h) => closingHeadIdx.some((key) => h.includes(key)))) continue;
-    // Extract table data rows (after first tr)
-    const dataRows = [...tableHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].slice(1);
+
+    // We only want tables with at least these columns in any order:
+    if (
+      !(
+        headers.includes("institute") &&
+        headers.includes("program") &&
+        headers.includes("opening rank") &&
+        headers.includes("closing rank")
+      )
+    ) {
+      continue;
+    }
+    // Extract data rows (after first tr)
+    const dataRows = [...tableHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].slice(1); // skip header
     for (const dr of dataRows) {
       const cols = [...dr[1].matchAll(/<td[^>]*>(.*?)<\/td>/gi)].map((m) =>
         m[1].replace(/<[^>]+>/g, "").trim()
       );
-      // Minimum columns: branch, cat, quota, round, open, close
-      if (cols.length < 6) continue;
+      if (cols.length < 10) continue;
+      // Expected order:
+      // 0: S.No, 1: Round, 2: Institute, 3: Program, 4: Stream, 5: Seat Type, 6: Quota, 7: Category, 8: Opening Rank, 9: Closing Rank
       const [
-        branch_name,
-        category,
-        quota,
-        round,
-        opening_rank,
-        closing_rank
+        _serial,          // 0
+        round,            // 1
+        college_name,     // 2
+        branch_name,      // 3 (Program)
+        _stream,          // 4
+        _seat_type,       // 5
+        quota,            // 6
+        category,         // 7
+        opening_rank,     // 8
+        closing_rank      // 9
       ] = cols;
-      if (!branch_name || !category || !closing_rank) continue;
+      if (!college_name || !branch_name || !category || !closing_rank) continue;
       result.push({
-        college_name: collegeName || "WBJEE College",
-        branch_name,
+        college_name: college_name,
+        branch_name: branch_name,
         year: year,
         round: Number(round) || 1,
-        category,
+        category: category,
         opening_rank: Number(opening_rank) || 0,
         closing_rank: Number(closing_rank) || 0,
         domicile: "Home",
-        quota
+        quota: quota,
       });
     }
   }
