@@ -272,13 +272,13 @@ college_id,branch_id,domicile,category,opening_rank,closing_rank
             }`}
           >
             <b>{uploadResult.message}</b>
-            {uploadResult.errors && uploadResult.errors.length > 0 && (
+            {(Array.isArray(uploadResult.errors) && uploadResult.errors.length > 0) ? (
               <ul className="ml-4 list-disc">
                 {uploadResult.errors.map((e: string, i: number) => (
                   <li key={i}>{e}</li>
                 ))}
               </ul>
-            )}
+            ) : null}
           </div>
         )}
       </CardContent>
