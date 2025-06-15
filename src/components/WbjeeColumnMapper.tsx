@@ -6,10 +6,7 @@ export const expectedCutoffsColumns = [
   { key: "category", label: "Category" },
   { key: "opening_rank", label: "Opening Rank" },
   { key: "closing_rank", label: "Closing Rank" },
-  { key: "domicile", label: "Domicile" },
-  { key: "quota", label: "Quota" },
-  { key: "round", label: "Counseling Round" },
-  { key: "year", label: "Year" },
+  { key: "domicile", label: "Domicile (only Home State or All India allowed)" },
 ];
 
 interface ColumnMapperProps {
@@ -37,20 +34,26 @@ const WbjeeColumnMapper: React.FC<ColumnMapperProps> = ({
           <div key={rc.key}>
             <label className="block mb-1 font-semibold">{rc.label}</label>
             <select
-              className="w-full rounded border px-2 py-1"
+              className="w-full rounded border px-2 py-1 bg-white"
               value={mapping[rc.key] || ""}
               onChange={e => handleSelect(rc.key, e.target.value)}
+              style={{ zIndex: 40 }}
             >
               <option value="">-- Not Set --</option>
               {rawHeaders.map(h => (
                 <option value={h} key={h}>{h}</option>
               ))}
             </select>
+            {rc.key === "domicile" && (
+              <div className="text-xs text-gray-400 mt-1">
+                Allowed values: <b>Home State</b> or <b>All India</b>
+              </div>
+            )}
           </div>
         ))}
       </div>
       <div className="text-xs text-gray-500 mt-2">
-        Map each required field to a column in your data. Only mapped fields will be uploaded.
+        Only the following columns will be uploaded: <b>college_id, branch_id, domicile, category, opening_rank, closing_rank</b>.
       </div>
     </div>
   );

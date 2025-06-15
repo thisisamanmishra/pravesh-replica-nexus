@@ -51,6 +51,24 @@ export function useWbjeeCutoffImport() {
     setShowColumnMapper(true);
   }
 
+  function normalizeDomicile(value: string | undefined) {
+    if (!value) return "Home State";
+    const v = value.toLowerCase().trim();
+    if (v === "home" || v === "home state" || v === "west bengal" || v === "home state (west bengal)") {
+      return "Home State";
+    }
+    if (
+      v === "other" ||
+      v === "all india" ||
+      v === "other state" ||
+      v === "ai" ||
+      v === "other state (all india)"
+    ) {
+      return "All India";
+    }
+    return "Home State";
+  }
+
   function transformRowsForDb(rows: any[], mapping: Record<string, string>) {
     const { collegeNameToId, branchNameToId } = refMaps;
     // Only these keys will be uploaded
@@ -71,14 +89,13 @@ export function useWbjeeCutoffImport() {
       const opening_rank = Number(row[mapping["opening_rank"]] ?? "") || null;
       const closing_rank = Number(row[mapping["closing_rank"]] ?? "") || null;
       let domicile = row[mapping["domicile"]];
-      if (!domicile && row["Quota"]?.toLowerCase().includes("home")) {
-        domicile = "Home";
-      }
+      domicile = normalizeDomicile(domicile);
+
       // Build only fields allowed for upload
       return {
         college_id,
         branch_id,
-        domicile: domicile || "Home",
+        domicile,
         category,
         opening_rank,
         closing_rank,
