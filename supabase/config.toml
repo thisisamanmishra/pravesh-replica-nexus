@@ -1,1 +1,5 @@
+
 project_id = "ibejltntfexvnwwjqbts"
+
+[functions.wbjee-scrape]
+verify_jwt = false
