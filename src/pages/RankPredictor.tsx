@@ -55,7 +55,7 @@ const RankPredictor = () => {
 
     const userScore = parseFloat(formData.score) || 0;
     const userPercentile = parseFloat(formData.percentile) || 0;
-    
+
     // Convert percentile to approximate rank
     let estimatedRank = 0;
     if (userPercentile > 0) {
@@ -68,6 +68,10 @@ const RankPredictor = () => {
         estimatedRank = Math.max(1, Math.round((userScore / 300) * 100000));
       }
     }
+
+    // Example: handle Tuition Fee Waiver similarly as a reserved/priority seat category
+    // This could be further fine-tuned if you want to give special cutoffs for fee waiver (not implemented here)
+    // All categories benefit from category-based adjustments below
 
     // Generate realistic college predictions
     const mockPredictions: PredictionResult[] = [
@@ -177,7 +181,7 @@ const RankPredictor = () => {
 
     return mockPredictions.filter(pred => {
       // Apply category-based adjustments
-      if (formData.category !== 'general') {
+      if (formData.category && formData.category !== 'general') {
         pred.probability = Math.min(95, pred.probability + 15);
       }
       

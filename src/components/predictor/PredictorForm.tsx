@@ -48,7 +48,8 @@ const PredictorForm = ({ onPredict, loading }: PredictorFormProps) => {
     { value: 'sc', label: 'SC' },
     { value: 'st', label: 'ST' },
     { value: 'ews', label: 'EWS' },
-    { value: 'obc-ncl', label: 'OBC-NCL' }
+    { value: 'obc-ncl', label: 'OBC-NCL' },
+    { value: 'tuition-fee-waiver', label: 'Tuition Fee Waiver' }
   ];
 
   const states = [
