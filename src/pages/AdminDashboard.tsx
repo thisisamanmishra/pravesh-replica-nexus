@@ -185,19 +185,19 @@ const AdminDashboard = () => {
       phone: college.phone || '',
       email: college.email || '',
       address: college.address || '',
-      facilities: college.facilities || {
-        library: { available: true, rating: '4.5' },
-        sports_complex: { available: true, rating: '4.2' },
-        hostels: { available: true, rating: '4.0' },
-        labs: { available: true, rating: '4.8' },
-        cafeteria: { available: true, rating: '4.3' },
-        wifi: { available: true, rating: '4.6' }
+      facilities: {
+        library: college.facilities?.library ?? { available: true, rating: '4.5' },
+        sports_complex: college.facilities?.sports_complex ?? { available: true, rating: '4.2' },
+        hostels: college.facilities?.hostels ?? { available: true, rating: '4.0' },
+        labs: college.facilities?.labs ?? { available: true, rating: '4.8' },
+        cafeteria: college.facilities?.cafeteria ?? { available: true, rating: '4.3' },
+        wifi: college.facilities?.wifi ?? { available: true, rating: '4.6' }
       },
       courses_offered: college.courses_offered ?? [''],
-      placement_stats: college.placement_stats || {
-        average_package: '',
-        highest_package: '',
-        placement_rate: ''
+      placement_stats: {
+        average_package: college.placement_stats?.average_package ?? '',
+        highest_package: college.placement_stats?.highest_package ?? '',
+        placement_rate: college.placement_stats?.placement_rate ?? ''
       },
       accreditation: college.accreditation || '',
       awards: college.awards ?? [''],
