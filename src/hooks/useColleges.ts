@@ -19,6 +19,29 @@ export interface College {
   rating?: number;
   image_url?: string;
   youtube_video_url?: string;
+  // Extended fields for enhanced college view
+  additional_images?: string[];
+  website_url?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  facilities?: {
+    [key: string]: {
+      available: boolean;
+      rating: string;
+    };
+  };
+  courses_offered?: string[];
+  placement_stats?: {
+    average_package?: string;
+    highest_package?: string;
+    placement_rate?: string;
+  };
+  accreditation?: string;
+  awards?: string[];
+  campus_area?: string;
+  admission_process?: string;
+  scholarships?: string[];
   created_at: string;
   updated_at: string;
 }
