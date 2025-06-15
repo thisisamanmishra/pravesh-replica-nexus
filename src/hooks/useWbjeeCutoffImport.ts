@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useWbjeeReferenceMaps } from "@/hooks/useWbjeeColumnLookup";
 import { expectedCutoffsColumns } from "@/components/WbjeeColumnMapper";
@@ -54,30 +53,35 @@ export function useWbjeeCutoffImport() {
 
   function transformRowsForDb(rows: any[], mapping: Record<string, string>) {
     const { collegeNameToId, branchNameToId } = refMaps;
+    // Only these keys will be uploaded
+    const allowedKeys = [
+      "college_id",
+      "branch_id",
+      "domicile",
+      "category",
+      "opening_rank",
+      "closing_rank",
+    ];
     return rows.map(row => {
       const collegeName = row[mapping["college_id"]]?.toLowerCase().trim();
       const branchName = row[mapping["branch_id"]]?.toLowerCase().trim();
       const college_id = collegeNameToId[collegeName] || null;
       const branch_id = branchNameToId[branchName] || null;
+      const category = row[mapping["category"]];
       const opening_rank = Number(row[mapping["opening_rank"]] ?? "") || null;
       const closing_rank = Number(row[mapping["closing_rank"]] ?? "") || null;
       let domicile = row[mapping["domicile"]];
       if (!domicile && row["Quota"]?.toLowerCase().includes("home")) {
         domicile = "Home";
       }
-      const round = Number(row[mapping["round"]] ?? "1") || 1;
-      const year = Number(row[mapping["year"]] ?? "") || new Date().getFullYear();
-
+      // Build only fields allowed for upload
       return {
         college_id,
         branch_id,
-        category: row[mapping["category"]],
+        domicile: domicile || "Home",
+        category,
         opening_rank,
         closing_rank,
-        domicile: domicile || "Home",
-        quota: row[mapping["quota"]] || "",
-        round,
-        year,
       };
     });
   }
