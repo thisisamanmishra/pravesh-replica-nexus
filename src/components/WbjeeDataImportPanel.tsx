@@ -45,8 +45,8 @@ const tableOptions = [
     label: "Cutoffs",
     example: [
       {
-        college_id: "uuid-of-college", // Replace with real UUID
-        branch_id: "uuid-of-branch", // Replace with real UUID
+        college_id: "Cooch Behar Government Engineering College, Cooch Behar", // Accepts name OR uuid
+        branch_id: "Civil Engineering", // Accepts branch name OR uuid
         year: 2023,
         round: 1,
         category: "GEN",
@@ -66,6 +66,7 @@ export default function WbjeeDataImportPanel() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [uploadWarnings, setUploadWarnings] = useState<string[]>([]);
+  const [parseAlert, setParseAlert] = useState<string | null>(null);
 
   const {
     csvText, setCsvText,
@@ -98,6 +99,17 @@ export default function WbjeeDataImportPanel() {
       .filter(Boolean);
   }, [parsedRows, showColumnMapper, table, columnMapping, transformRowsForDb]);
 
+  // New: detect obvious parse errors and help the user
+  React.useEffect(() => {
+    if (tab === "csv" && csvText && rawHeaders.length === 1 && parsedRows.length > 0) {
+      setParseAlert(
+        "⚠️ Detected only one column header. Please make sure your data columns are separated by commas, tabs, or at least two spaces. Names with commas should be wrapped in quotes. Try using 'Cutoffs' table for WBJEE cutoffs."
+      );
+    } else {
+      setParseAlert(null);
+    }
+  }, [tab, csvText, rawHeaders, parsedRows, table]);
+
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     setUploadResult(null);
@@ -120,7 +132,6 @@ export default function WbjeeDataImportPanel() {
           }
           records = mapped;
         } else {
-          // Fallback: naive parse
           records = [];
         }
       } else {
@@ -154,6 +165,12 @@ export default function WbjeeDataImportPanel() {
     setLoading(false);
   }
 
+  // Helper notice for correct table
+  const showCutoffInputTip =
+    tab === "csv" &&
+    (csvText.startsWith("college_id") || csvText.match(/cutoff|rank/i)) &&
+    table !== "wbjee_cutoffs";
+
   return (
     <Card>
       <CardHeader>
@@ -175,6 +192,16 @@ export default function WbjeeDataImportPanel() {
               ))}
             </select>
           </label>
+          {showCutoffInputTip && (
+            <div className="bg-blue-50 text-blue-900 border-l-4 border-blue-400 p-3 rounded text-sm mb-2">
+              It looks like you're uploading Cutoff data. Please select <b>Cutoffs</b> in the dropdown above for this type of CSV.
+            </div>
+          )}
+          {parseAlert && (
+            <div className="bg-yellow-50 text-yellow-900 border-l-4 border-yellow-500 p-3 rounded text-sm mb-2">
+              {parseAlert}
+            </div>
+          )}
           {showColumnMapper && table === "wbjee_cutoffs" && rawHeaders.length > 0 && (
             <WbjeeColumnMapper
               rawHeaders={rawHeaders}
@@ -204,15 +231,22 @@ export default function WbjeeDataImportPanel() {
                 className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
                 value={csvText}
                 onChange={handleCsvChange}
-                placeholder="Paste CSV (or Excel as CSV) here..."
+                placeholder="Paste CSV (comma, tab, or 2+ spaces as separator). If names have commas, use quotes. Example:
+college_id,branch_id,domicile,category,opening_rank,closing_rank
+\"Cooch Behar Government Engineering College, Cooch Behar\",Civil Engineering,Home State,OBC-A,31464,37544"
               />
+              <div className="text-xs text-gray-500 mt-1">
+                Columns should be separated by <b>comma, tab, or at least two spaces</b>. For names containing commas, enclose the value in quotes.
+                <br />
+                <b>Tip:</b> Export using Excel/Sheets' CSV to guarantee correct formatting, or double-check delimiters in your pasted data.
+              </div>
             </TabsContent>
             <TabsContent value="json">
               <textarea
                 className="w-full min-h-[180px] font-mono rounded border px-2 py-1"
                 value={jsonText}
                 onChange={(e) => setJsonText(e.target.value)}
-                placeholder='Paste a JSON array of objects like [{"name":"College", ...}]'
+                placeholder='Paste a JSON array of objects like [{"college_id":"...", ...}]'
               />
             </TabsContent>
             <TabsContent value="example">

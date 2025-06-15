@@ -3,15 +3,50 @@ import { useState } from "react";
 import { useWbjeeReferenceMaps } from "@/hooks/useWbjeeColumnLookup";
 import { expectedCutoffsColumns } from "@/components/WbjeeColumnMapper";
 
+// Improved parser: detects comma, tab, or 2+ spaces, and trims empty lines
 export function parseFlexibleCSV(text: string) {
-  const lines = text.trim().split(/\r?\n/).filter(Boolean);
+  let lines = text.trim().split(/\r?\n/).filter(Boolean);
   if (lines.length === 0) return { rows: [], headers: [] };
-  const delimiter = lines[0].includes("\t") ? "\t" : ",";
-  const headers = lines[0].split(delimiter).map(h => h.trim());
-  const rows = lines.slice(1).map(line => {
-    const values = line.split(delimiter).map(v => v.trim());
-    return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
-  });
+
+  // Try comma, tab, and 2+ spaces
+  let delimiter = ",";
+  if (lines[0].includes("\t")) delimiter = "\t";
+  else if (lines[0].match(/ {2,}/)) delimiter = "  "; // two or more spaces as delimiter
+  // If first line has only one column but line contains commas inside quotes, try to split with regex.
+  let headers = [];
+  let rows = [];
+  // RegExp to split commas but ignore those inside quotes:
+  const smartSplit = (str: string) => {
+    // Matches quoted OR unquoted fields
+    const re = /(".*?"|[^",\s]+)(?=\s*[, ]|\s*$)/g;
+    return [...str.matchAll(re)].map(m => m[0].replace(/^"|"$/g, ""));
+  };
+  
+  // Prefer csv's built-in splitting if commas/tabs
+  if (delimiter === ",") {
+    // Try to handle quoted values with commas
+    headers = lines[0].includes('"') ? smartSplit(lines[0]) : lines[0].split(",");
+    rows = lines.slice(1).map(line => {
+      let arr = line.includes('"') ? smartSplit(line) : line.split(",");
+      // If not enough columns, try fallback to splitting on multiple spaces
+      if (arr.length < headers.length && line.match(/ {2,}/)) {
+        arr = line.split(/ {2,}/).map(v => v.trim());
+      }
+      return Object.fromEntries(headers.map((h, i) => [h.trim(), (arr[i] ?? "").trim()]));
+    });
+  } else if (delimiter === "\t") {
+    headers = lines[0].split("\t").map(h => h.trim());
+    rows = lines.slice(1).map(line => {
+      const arr = line.split("\t").map(v => v.trim());
+      return Object.fromEntries(headers.map((h, i) => [h, arr[i]]));
+    });
+  } else if (delimiter === "  ") {
+    headers = lines[0].split(/ {2,}/).map(h => h.trim());
+    rows = lines.slice(1).map(line => {
+      const arr = line.split(/ {2,}/).map(v => v.trim());
+      return Object.fromEntries(headers.map((h, i) => [h, arr[i]]));
+    });
+  }
   return { rows, headers };
 }
 
