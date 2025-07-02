@@ -22,7 +22,7 @@ const categories = [
 
 const domiciles = [
   { value: "Home State", label: "Home State (West Bengal)" },
-  { value: "Other State", label: "Other State" },
+  { value: "All India", label: "All India (Other States)" },
 ];
 
 export default function WbjeePredictorForm({ onPredict, loading }: WbjeePredictorFormProps) {

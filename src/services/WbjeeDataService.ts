@@ -370,31 +370,41 @@ class WbjeeDataService {
   }
 
   private normalizeDomicile(domicile: string): string {
-    if (domicile.toLowerCase().includes('home') || domicile.toLowerCase().includes('west bengal')) {
+    const normalized = domicile.toLowerCase().trim();
+    
+    // Check if it's Home State/West Bengal quota
+    if (normalized.includes('home') || 
+        normalized.includes('west bengal') || 
+        normalized.includes('wb') ||
+        normalized.includes('hs')) {
       return 'Home State';
     }
-    return 'Other State';
+    
+    // Check if it's All India quota
+    if (normalized.includes('all india') || 
+        normalized.includes('ai') ||
+        normalized.includes('other') ||
+        normalized.includes('os')) {
+      return 'All India';
+    }
+    
+    // Default mapping based on common patterns
+    return domicile.includes('State') ? 'Home State' : 'All India';
   }
 
   private domicileMatches(cutoffDomicile: string, userDomicile: string): boolean {
-    const normalizedCutoff = cutoffDomicile.toLowerCase().trim();
-    const normalizedUser = userDomicile.toLowerCase().trim();
+    const normalizedCutoff = this.normalizeDomicile(cutoffDomicile);
+    const normalizedUser = this.normalizeDomicile(userDomicile);
     
-    // If user selected Home State
-    if (normalizedUser.includes('home') || normalizedUser.includes('west bengal')) {
-      return normalizedCutoff.includes('home') || 
-             normalizedCutoff.includes('west bengal') ||
-             normalizedCutoff.includes('wb') ||
-             normalizedCutoff.includes('state') ||
-             normalizedCutoff.includes('hs');
-    } 
-    // If user selected Other State
-    else {
-      return normalizedCutoff.includes('other') || 
-             normalizedCutoff.includes('all india') ||
-             normalizedCutoff.includes('ai') ||
-             normalizedCutoff.includes('os');
-    }
+    console.log('Domicile matching:', {
+      cutoffDomicile,
+      userDomicile,
+      normalizedCutoff,
+      normalizedUser,
+      matches: normalizedCutoff === normalizedUser
+    });
+    
+    return normalizedCutoff === normalizedUser;
   }
 
   getAdmissionChance(userRank: number, closingRank: number): 'High' | 'Moderate' | 'Low' {
