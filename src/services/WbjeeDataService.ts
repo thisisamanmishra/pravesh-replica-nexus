@@ -1,4 +1,3 @@
-
 // Service to handle WBJEE cutoff data from CSV
 export interface WbjeeCutoffData {
   college_name: string;
@@ -27,111 +26,193 @@ class WbjeeDataService {
     if (this.isDataLoaded) return;
 
     try {
-      // Load the CSV data from the public directory
+      // Try to load the CSV data from the public directory - correct path
       const response = await fetch('/src/data/WBJEE_Cutoff_data_2024(1).csv');
       if (!response.ok) {
-        throw new Error(`Failed to fetch CSV: ${response.status}`);
+        console.warn(`Failed to fetch CSV from /src/data/, trying alternative path. Status: ${response.status}`);
+        // Try alternative path
+        const altResponse = await fetch('/WBJEE_Cutoff_data_2024(1).csv');
+        if (!altResponse.ok) {
+          throw new Error(`Failed to fetch CSV from both paths: ${response.status}, ${altResponse.status}`);
+        }
+        const csvText = await altResponse.text();
+        this.processCsvData(csvText);
+        return;
       }
       
       const csvText = await response.text();
-      console.log('CSV loaded, length:', csvText.length);
+      this.processCsvData(csvText);
       
-      // Parse CSV
-      const lines = csvText.trim().split('\n');
-      if (lines.length < 2) {
-        throw new Error('CSV file appears to be empty or invalid');
-      }
-      
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-      console.log('CSV headers:', headers);
-      
-      this.cutoffData = lines.slice(1).map((line, index) => {
-        try {
-          const values = this.parseCSVLine(line);
-          const row: any = {};
-          
-          headers.forEach((header, idx) => {
-            row[header] = values[idx]?.trim().replace(/"/g, '') || '';
+    } catch (error) {
+      console.error('Error loading WBJEE data:', error);
+      this.createFallbackData();
+    }
+  }
+
+  private processCsvData(csvText: string): void {
+    console.log('CSV loaded successfully, length:', csvText.length);
+    console.log('First 500 characters:', csvText.substring(0, 500));
+    
+    // Parse CSV
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) {
+      throw new Error('CSV file appears to be empty or invalid');
+    }
+    
+    // Parse headers - handle potential BOM and clean up
+    const rawHeaders = lines[0].replace(/^\uFEFF/, '').split(',').map(h => h.trim().replace(/"/g, ''));
+    console.log('Raw CSV headers:', rawHeaders);
+    console.log('Number of headers:', rawHeaders.length);
+    console.log('First few data lines:', lines.slice(1, 3).map(line => line.substring(0, 100)));
+
+    // Process data rows
+    const validRows: WbjeeCutoffData[] = [];
+    let processedCount = 0;
+    let skippedCount = 0;
+
+    for (let i = 1; i < Math.min(lines.length, 1000); i++) { // Limit to first 1000 rows for debugging
+      try {
+        const values = this.parseCSVLine(lines[i]);
+        const row: any = {};
+        
+        rawHeaders.forEach((header, idx) => {
+          row[header] = values[idx]?.trim().replace(/"/g, '') || '';
+        });
+
+        // Try multiple possible header variations
+        const collegeName = row['Institute'] || row['College'] || row['College Name'] || row['COLLEGE'] || '';
+        const branchName = row['Program'] || row['Branch'] || row['Course'] || row['COURSE'] || '';
+        const category = row['Category'] || row['CATEGORY'] || '';
+        const domicile = row['Quota'] || row['Domicile'] || row['QUOTA'] || '';
+        const openingRank = this.parseNumber(row['Opening Rank'] || row['OPENING RANK'] || row['Opening'] || '0');
+        const closingRank = this.parseNumber(row['Closing Rank'] || row['CLOSING RANK'] || row['Closing'] || '0');
+
+        // Debug first few rows
+        if (i <= 5) {
+          console.log(`Row ${i} parsed:`, {
+            collegeName,
+            branchName,
+            category,
+            domicile,
+            openingRank,
+            closingRank,
+            rawRow: Object.keys(row).slice(0, 5).map(k => `${k}: "${row[k]}"`)
           });
+        }
 
-          // Map the actual CSV headers to our expected format
-          // Based on console logs: ["", "Institute", "Program", "Stream", "Seat Type", "Quota", "Category", "Opening Rank", "Closing Rank"]
-          const collegeName = row['Institute'] || '';
-          const branchName = row['Program'] || '';
-          const category = row['Category'] || '';
-          const domicile = row['Quota'] || '';
-          const openingRank = parseInt(row['Opening Rank'] || '0') || 0;
-          const closingRank = parseInt(row['Closing Rank'] || '0') || 0;
-
-          return {
+        // Validate row data
+        if (collegeName && branchName && category && domicile && openingRank > 0 && closingRank > 0) {
+          validRows.push({
             college_name: collegeName,
             branch_name: branchName,
             category: category,
             domicile: domicile,
             opening_rank: openingRank,
             closing_rank: closingRank,
-            round: 1, // Default to round 1
+            round: 1,
             year: 2024,
-          };
-        } catch (error) {
-          console.warn(`Error parsing line ${index + 1}:`, error);
-          return null;
+          });
+          processedCount++;
+        } else {
+          skippedCount++;
+          if (skippedCount <= 5) {
+            console.log(`Skipped row ${i} - missing data:`, {
+              collegeName: collegeName || 'MISSING',
+              branchName: branchName || 'MISSING',
+              category: category || 'MISSING',
+              domicile: domicile || 'MISSING',
+              openingRank: openingRank || 'MISSING',
+              closingRank: closingRank || 'MISSING'
+            });
+          }
         }
-      }).filter((item): item is WbjeeCutoffData => 
-        item !== null && 
-        item.college_name && 
-        item.branch_name && 
-        item.closing_rank > 0 && 
-        item.opening_rank > 0
-      );
-
-      this.isDataLoaded = true;
-      console.log(`Successfully loaded ${this.cutoffData.length} WBJEE cutoff records`);
-      
-      // Log sample data for debugging
-      if (this.cutoffData.length > 0) {
-        console.log('Sample cutoff data:', this.cutoffData.slice(0, 3));
+      } catch (error) {
+        console.warn(`Error parsing line ${i}:`, error);
+        skippedCount++;
       }
-      
-    } catch (error) {
-      console.error('Error loading WBJEE data:', error);
-      this.cutoffData = [];
-      
-      // Fallback: Create some mock data for testing
-      this.cutoffData = [
-        {
-          college_name: "Jadavpur University",
-          branch_name: "Computer Science and Engineering",
-          category: "GENERAL",
-          domicile: "Home State",
-          opening_rank: 1,
-          closing_rank: 500,
-          round: 1,
-          year: 2024
-        },
-        {
-          college_name: "Jadavpur University",
-          branch_name: "Electrical Engineering",
-          category: "GENERAL",
-          domicile: "Home State",
-          opening_rank: 501,
-          closing_rank: 800,
-          round: 1,
-          year: 2024
-        },
-        {
-          college_name: "Calcutta University",
-          branch_name: "Computer Science and Engineering",
-          category: "GENERAL",
-          domicile: "Home State",
-          opening_rank: 801,
-          closing_rank: 1500,
-          round: 1,
-          year: 2024
-        }
-      ];
-      console.log('Using fallback mock data:', this.cutoffData.length, 'records');
     }
+
+    this.cutoffData = validRows;
+    this.isDataLoaded = true;
+    
+    console.log(`CSV processing complete:`, {
+      totalLines: lines.length,
+      processedRows: processedCount,
+      skippedRows: skippedCount,
+      validData: this.cutoffData.length
+    });
+
+    // Log sample data
+    if (this.cutoffData.length > 0) {
+      console.log('Sample cutoff data (first 3 records):', this.cutoffData.slice(0, 3));
+      console.log('Categories found:', [...new Set(this.cutoffData.map(d => d.category))]);
+      console.log('Domiciles found:', [...new Set(this.cutoffData.map(d => d.domicile))]);
+    }
+  }
+
+  private parseNumber(value: string): number {
+    // Remove any non-numeric characters except decimal point
+    const cleanValue = value.replace(/[^\d.]/g, '');
+    const parsed = parseInt(cleanValue) || 0;
+    return parsed;
+  }
+
+  private createFallbackData(): void {
+    console.log('Creating fallback mock data');
+    this.cutoffData = [
+      {
+        college_name: "Jadavpur University",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "Home State",
+        opening_rank: 1,
+        closing_rank: 500,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Jadavpur University",
+        branch_name: "Electrical Engineering",
+        category: "GENERAL",
+        domicile: "Home State",
+        opening_rank: 501,
+        closing_rank: 800,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Calcutta University",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "Home State",
+        opening_rank: 801,
+        closing_rank: 1500,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Kalyani Government Engineering College",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "Home State",
+        opening_rank: 1501,
+        closing_rank: 3000,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Jalpaiguri Government Engineering College",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "Home State",
+        opening_rank: 3001,
+        closing_rank: 5000,
+        round: 1,
+        year: 2024
+      }
+    ];
+    this.isDataLoaded = true;
+    console.log('Fallback data created:', this.cutoffData.length, 'records');
   }
 
   private parseCSVLine(line: string): string[] {
@@ -162,40 +243,51 @@ class WbjeeDataService {
     const normalizedCategory = this.normalizeCategory(category);
     const normalizedDomicile = this.normalizeDomicile(domicile);
     
-    console.log('Searching for predictions with:', {
+    console.log('Getting predictions with:', {
       userRank,
+      category: category,
       normalizedCategory,
+      domicile: domicile,
       normalizedDomicile,
       totalRecords: this.cutoffData.length
     });
     
+    if (this.cutoffData.length === 0) {
+      console.error('No cutoff data available');
+      return [];
+    }
+    
     // Filter cutoffs where user rank is eligible
-    // User is eligible if: userRank >= opening_rank AND userRank <= closing_rank
     const eligibleCutoffs = this.cutoffData.filter(cutoff => {
       const categoryMatch = this.categoryMatches(cutoff.category, normalizedCategory);
       const domicileMatch = this.domicileMatches(cutoff.domicile, normalizedDomicile);
       const rankEligible = userRank >= cutoff.opening_rank && userRank <= cutoff.closing_rank;
       
-      // Debug logging for first few records
-      if (this.cutoffData.indexOf(cutoff) < 5) {
-        console.log('Checking cutoff:', {
+      return categoryMatch && domicileMatch && rankEligible;
+    });
+
+    console.log(`Found ${eligibleCutoffs.length} eligible cutoffs for rank ${userRank}`);
+    
+    if (eligibleCutoffs.length === 0) {
+      // Debug: Show why no matches found
+      console.log('Debug: No matches found. Checking first 10 records:');
+      this.cutoffData.slice(0, 10).forEach((cutoff, idx) => {
+        const categoryMatch = this.categoryMatches(cutoff.category, normalizedCategory);
+        const domicileMatch = this.domicileMatches(cutoff.domicile, normalizedDomicile);
+        const rankEligible = userRank >= cutoff.opening_rank && userRank <= cutoff.closing_rank;
+        
+        console.log(`Record ${idx + 1}:`, {
           college: cutoff.college_name,
-          branch: cutoff.branch_name,
           category: cutoff.category,
           domicile: cutoff.domicile,
           opening: cutoff.opening_rank,
           closing: cutoff.closing_rank,
           categoryMatch,
           domicileMatch,
-          rankEligible,
-          userRank
+          rankEligible
         });
-      }
-      
-      return categoryMatch && domicileMatch && rankEligible;
-    });
-
-    console.log(`Found ${eligibleCutoffs.length} eligible cutoffs`);
+      });
+    }
 
     // Group by college and branch
     const collegeMap = new Map<string, Map<string, WbjeeCutoffData[]>>();
@@ -245,7 +337,7 @@ class WbjeeDataService {
     results.sort((a, b) => b.branches.length - a.branches.length);
     
     console.log(`Returning ${results.length} colleges with predictions`);
-    return results.slice(0, 50); // Limit to top 50 colleges
+    return results.slice(0, 50);
   }
 
   private normalizeCategory(category: string): string {
