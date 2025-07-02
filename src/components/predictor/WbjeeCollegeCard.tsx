@@ -20,8 +20,18 @@ export default function WbjeeCollegeCard({ college, userRank, category, domicile
         <div className="space-y-3">
           {college.branches.map((branch, idx) => {
             const latestCutoff = branch.cutoffs[0]; // Already sorted by round
-            const admissionChance = userRank <= latestCutoff.closing_rank * 0.7 ? 'High' : 
-                                  userRank <= latestCutoff.closing_rank * 0.9 ? 'Moderate' : 'Low';
+            
+            // Determine admission chance based on user rank position within the range
+            const rankPosition = (userRank - latestCutoff.opening_rank) / (latestCutoff.closing_rank - latestCutoff.opening_rank);
+            let admissionChance: 'High' | 'Moderate' | 'Low';
+            
+            if (rankPosition <= 0.3) {
+              admissionChance = 'High';
+            } else if (rankPosition <= 0.7) {
+              admissionChance = 'Moderate';
+            } else {
+              admissionChance = 'Low';
+            }
             
             return (
               <div key={idx} className="border rounded-lg p-3 bg-gray-50">
@@ -64,17 +74,9 @@ export default function WbjeeCollegeCard({ college, userRank, category, domicile
                   </div>
                 </div>
 
-                {userRank <= latestCutoff.closing_rank && (
-                  <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-700">
-                    ✅ You are eligible! Your rank {userRank} is within the cutoff range.
-                  </div>
-                )}
-                
-                {userRank > latestCutoff.closing_rank && (
-                  <div className="mt-2 p-2 bg-red-50 rounded text-sm text-red-700">
-                    ❌ Your rank {userRank} is above the cutoff of {latestCutoff.closing_rank}.
-                  </div>
-                )}
+                <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-700">
+                  ✅ You are eligible! Your rank {userRank} is between the opening rank ({latestCutoff.opening_rank}) and closing rank ({latestCutoff.closing_rank}).
+                </div>
               </div>
             );
           })}
