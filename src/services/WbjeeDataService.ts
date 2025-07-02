@@ -54,15 +54,14 @@ class WbjeeDataService {
             row[header] = values[idx]?.trim().replace(/"/g, '') || '';
           });
 
-          // Map common header variations
-          const collegeName = row['College Name'] || row['college_name'] || row['College'] || '';
-          const branchName = row['Branch Name'] || row['branch_name'] || row['Branch'] || '';
-          const category = row['Category'] || row['category'] || '';
-          const domicile = row['Domicile'] || row['domicile'] || row['Quota'] || '';
-          const openingRank = parseInt(row['Opening Rank'] || row['opening_rank'] || row['Opening'] || '0') || 0;
-          const closingRank = parseInt(row['Closing Rank'] || row['closing_rank'] || row['Closing'] || '0') || 0;
-          const round = parseInt(row['Round'] || row['round'] || '1') || 1;
-          const year = parseInt(row['Year'] || row['year'] || '2024') || 2024;
+          // Map the actual CSV headers to our expected format
+          // Based on console logs: ["", "Institute", "Program", "Stream", "Seat Type", "Quota", "Category", "Opening Rank", "Closing Rank"]
+          const collegeName = row['Institute'] || '';
+          const branchName = row['Program'] || '';
+          const category = row['Category'] || '';
+          const domicile = row['Quota'] || '';
+          const openingRank = parseInt(row['Opening Rank'] || '0') || 0;
+          const closingRank = parseInt(row['Closing Rank'] || '0') || 0;
 
           return {
             college_name: collegeName,
@@ -71,8 +70,8 @@ class WbjeeDataService {
             domicile: domicile,
             opening_rank: openingRank,
             closing_rank: closingRank,
-            round: round,
-            year: year,
+            round: 1, // Default to round 1
+            year: 2024,
           };
         } catch (error) {
           console.warn(`Error parsing line ${index + 1}:`, error);
@@ -173,7 +172,7 @@ class WbjeeDataService {
     // Filter cutoffs where user rank is eligible
     // User is eligible if: userRank >= opening_rank AND userRank <= closing_rank
     const eligibleCutoffs = this.cutoffData.filter(cutoff => {
-      const categoryMatch = cutoff.category.toUpperCase() === normalizedCategory.toUpperCase();
+      const categoryMatch = this.categoryMatches(cutoff.category, normalizedCategory);
       const domicileMatch = this.domicileMatches(cutoff.domicile, normalizedDomicile);
       const rankEligible = userRank >= cutoff.opening_rank && userRank <= cutoff.closing_rank;
       
@@ -253,6 +252,7 @@ class WbjeeDataService {
     const categoryMap: { [key: string]: string } = {
       'GEN': 'GENERAL',
       'GENERAL': 'GENERAL',
+      'General': 'GENERAL',
       'OBC-A': 'OBC-A',
       'OBC-B': 'OBC-B',
       'SC': 'SC',
@@ -260,7 +260,21 @@ class WbjeeDataService {
       'EWS': 'EWS',
       'PWD': 'PWD'
     };
-    return categoryMap[category.toUpperCase()] || 'GENERAL';
+    return categoryMap[category] || 'GENERAL';
+  }
+
+  private categoryMatches(cutoffCategory: string, userCategory: string): boolean {
+    // Normalize both categories for comparison
+    const normalizedCutoff = cutoffCategory.toUpperCase().trim();
+    const normalizedUser = userCategory.toUpperCase().trim();
+    
+    // Direct match
+    if (normalizedCutoff === normalizedUser) return true;
+    
+    // Handle variations
+    if (normalizedUser === 'GENERAL' && (normalizedCutoff === 'GEN' || normalizedCutoff === 'GENERAL')) return true;
+    
+    return false;
   }
 
   private normalizeDomicile(domicile: string): string {
@@ -271,18 +285,23 @@ class WbjeeDataService {
   }
 
   private domicileMatches(cutoffDomicile: string, userDomicile: string): boolean {
-    const normalizedCutoff = cutoffDomicile.toLowerCase();
-    const normalizedUser = userDomicile.toLowerCase();
+    const normalizedCutoff = cutoffDomicile.toLowerCase().trim();
+    const normalizedUser = userDomicile.toLowerCase().trim();
     
+    // If user selected Home State
     if (normalizedUser.includes('home') || normalizedUser.includes('west bengal')) {
       return normalizedCutoff.includes('home') || 
              normalizedCutoff.includes('west bengal') ||
              normalizedCutoff.includes('wb') ||
-             normalizedCutoff.includes('state');
-    } else {
+             normalizedCutoff.includes('state') ||
+             normalizedCutoff.includes('hs');
+    } 
+    // If user selected Other State
+    else {
       return normalizedCutoff.includes('other') || 
              normalizedCutoff.includes('all india') ||
-             normalizedCutoff.includes('ai');
+             normalizedCutoff.includes('ai') ||
+             normalizedCutoff.includes('os');
     }
   }
 
