@@ -350,11 +350,9 @@ export type Database = {
       wbjee_cutoffs: {
         Row: {
           branch_id: string | null
-          branch_name: string | null
           category: string
           closing_rank: number | null
           college_id: string | null
-          college_name: string | null
           created_at: string | null
           domicile: string | null
           id: string
@@ -365,11 +363,9 @@ export type Database = {
         }
         Insert: {
           branch_id?: string | null
-          branch_name?: string | null
           category: string
           closing_rank?: number | null
           college_id?: string | null
-          college_name?: string | null
           created_at?: string | null
           domicile?: string | null
           id?: string
@@ -380,11 +376,9 @@ export type Database = {
         }
         Update: {
           branch_id?: string | null
-          branch_name?: string | null
           category?: string
           closing_rank?: number | null
           college_id?: string | null
-          college_name?: string | null
           created_at?: string | null
           domicile?: string | null
           id?: string
