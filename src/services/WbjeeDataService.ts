@@ -1,3 +1,4 @@
+
 // Service to handle WBJEE cutoff data from CSV
 export interface WbjeeCutoffData {
   college_name: string;
@@ -26,7 +27,7 @@ class WbjeeDataService {
     if (this.isDataLoaded) return;
 
     try {
-      // Try to load the CSV data from the public directory - correct path
+      // Try to load the CSV data from the public directory
       const response = await fetch('/src/data/WBJEE_Cutoff_data_2024(1).csv');
       if (!response.ok) {
         console.warn(`Failed to fetch CSV from /src/data/, trying alternative path. Status: ${response.status}`);
@@ -164,7 +165,7 @@ class WbjeeDataService {
       {
         college_name: "Jadavpur University",
         branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
+        category: "Open",
         domicile: "Home State",
         opening_rank: 1,
         closing_rank: 500,
@@ -174,48 +175,18 @@ class WbjeeDataService {
       {
         college_name: "Jadavpur University",
         branch_name: "Electrical Engineering",
-        category: "GENERAL",
+        category: "Open",
         domicile: "Home State",
         opening_rank: 501,
         closing_rank: 800,
         round: 1,
         year: 2024
       },
-      {
-        college_name: "Calcutta University",
-        branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
-        domicile: "Home State",
-        opening_rank: 801,
-        closing_rank: 1500,
-        round: 1,
-        year: 2024
-      },
-      {
-        college_name: "Kalyani Government Engineering College",
-        branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
-        domicile: "Home State",
-        opening_rank: 1501,
-        closing_rank: 3000,
-        round: 1,
-        year: 2024
-      },
-      {
-        college_name: "Jalpaiguri Government Engineering College",
-        branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
-        domicile: "Home State",
-        opening_rank: 3001,
-        closing_rank: 5000,
-        round: 1,
-        year: 2024
-      },
-      // All India quota entries with wider rank ranges for testing
+      // All India quota entries
       {
         college_name: "Jadavpur University",
         branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
+        category: "Open",
         domicile: "All India",
         opening_rank: 1,
         closing_rank: 1000,
@@ -225,7 +196,7 @@ class WbjeeDataService {
       {
         college_name: "Jadavpur University",
         branch_name: "Electrical Engineering",
-        category: "GENERAL",
+        category: "Open",
         domicile: "All India",
         opening_rank: 1001,
         closing_rank: 2000,
@@ -235,30 +206,10 @@ class WbjeeDataService {
       {
         college_name: "Calcutta University",
         branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
+        category: "Open",
         domicile: "All India",
         opening_rank: 2001,
         closing_rank: 4000,
-        round: 1,
-        year: 2024
-      },
-      {
-        college_name: "Kalyani Government Engineering College",
-        branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
-        domicile: "All India",
-        opening_rank: 4001,
-        closing_rank: 6000,
-        round: 1,
-        year: 2024
-      },
-      {
-        college_name: "Jalpaiguri Government Engineering College",
-        branch_name: "Computer Science and Engineering",
-        category: "GENERAL",
-        domicile: "All India",
-        opening_rank: 6001,
-        closing_rank: 8000,
         round: 1,
         year: 2024
       },
@@ -266,7 +217,7 @@ class WbjeeDataService {
       {
         college_name: "Jadavpur University",
         branch_name: "Computer Science and Engineering",
-        category: "OBC-A",
+        category: "OBC - A",
         domicile: "All India",
         opening_rank: 1001,
         closing_rank: 3000,
@@ -276,7 +227,7 @@ class WbjeeDataService {
       {
         college_name: "Calcutta University",
         branch_name: "Computer Science and Engineering",
-        category: "OBC-A",
+        category: "OBC - A",
         domicile: "All India",
         opening_rank: 3001,
         closing_rank: 5000,
@@ -286,7 +237,6 @@ class WbjeeDataService {
     ];
     this.isDataLoaded = true;
     console.log('Fallback data created:', this.cutoffData.length, 'records');
-    console.log('Sample All India records:', this.cutoffData.filter(d => d.domicile === 'All India').slice(0, 3));
   }
 
   private parseCSVLine(line: string): string[] {
@@ -410,29 +360,27 @@ class WbjeeDataService {
 
   private normalizeCategory(category: string): string {
     const categoryMap: { [key: string]: string } = {
-      'GEN': 'GENERAL',
-      'GENERAL': 'GENERAL',
-      'General': 'GENERAL',
-      'OBC-A': 'OBC-A',
-      'OBC-B': 'OBC-B',
+      'GEN': 'Open',
+      'GENERAL': 'Open',
+      'General': 'Open',
+      'Open': 'Open',
+      'OBC-A': 'OBC - A',
+      'OBC-B': 'OBC - B',
       'SC': 'SC',
       'ST': 'ST',
       'EWS': 'EWS',
       'PWD': 'PWD'
     };
-    return categoryMap[category] || 'GENERAL';
+    return categoryMap[category] || 'Open';
   }
 
   private categoryMatches(cutoffCategory: string, userCategory: string): boolean {
     // Normalize both categories for comparison
-    const normalizedCutoff = cutoffCategory.toUpperCase().trim();
-    const normalizedUser = userCategory.toUpperCase().trim();
+    const normalizedCutoff = cutoffCategory.trim();
+    const normalizedUser = userCategory.trim();
     
     // Direct match
     if (normalizedCutoff === normalizedUser) return true;
-    
-    // Handle variations
-    if (normalizedUser === 'GENERAL' && (normalizedCutoff === 'GEN' || normalizedCutoff === 'GENERAL')) return true;
     
     return false;
   }
