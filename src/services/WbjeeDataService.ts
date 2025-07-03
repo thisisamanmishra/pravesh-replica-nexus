@@ -211,14 +211,14 @@ class WbjeeDataService {
         round: 1,
         year: 2024
       },
-      // All India quota entries (typically higher cutoffs)
+      // All India quota entries with wider rank ranges for testing
       {
         college_name: "Jadavpur University",
         branch_name: "Computer Science and Engineering",
         category: "GENERAL",
         domicile: "All India",
         opening_rank: 1,
-        closing_rank: 200,
+        closing_rank: 1000,
         round: 1,
         year: 2024
       },
@@ -227,8 +227,8 @@ class WbjeeDataService {
         branch_name: "Electrical Engineering",
         category: "GENERAL",
         domicile: "All India",
-        opening_rank: 201,
-        closing_rank: 400,
+        opening_rank: 1001,
+        closing_rank: 2000,
         round: 1,
         year: 2024
       },
@@ -237,8 +237,8 @@ class WbjeeDataService {
         branch_name: "Computer Science and Engineering",
         category: "GENERAL",
         domicile: "All India",
-        opening_rank: 401,
-        closing_rank: 800,
+        opening_rank: 2001,
+        closing_rank: 4000,
         round: 1,
         year: 2024
       },
@@ -247,8 +247,8 @@ class WbjeeDataService {
         branch_name: "Computer Science and Engineering",
         category: "GENERAL",
         domicile: "All India",
-        opening_rank: 801,
-        closing_rank: 1500,
+        opening_rank: 4001,
+        closing_rank: 6000,
         round: 1,
         year: 2024
       },
@@ -257,14 +257,36 @@ class WbjeeDataService {
         branch_name: "Computer Science and Engineering",
         category: "GENERAL",
         domicile: "All India",
-        opening_rank: 1501,
-        closing_rank: 2500,
+        opening_rank: 6001,
+        closing_rank: 8000,
+        round: 1,
+        year: 2024
+      },
+      // Add some OBC-A entries for All India
+      {
+        college_name: "Jadavpur University",
+        branch_name: "Computer Science and Engineering",
+        category: "OBC-A",
+        domicile: "All India",
+        opening_rank: 1001,
+        closing_rank: 3000,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Calcutta University",
+        branch_name: "Computer Science and Engineering",
+        category: "OBC-A",
+        domicile: "All India",
+        opening_rank: 3001,
+        closing_rank: 5000,
         round: 1,
         year: 2024
       }
     ];
     this.isDataLoaded = true;
     console.log('Fallback data created:', this.cutoffData.length, 'records');
+    console.log('Sample All India records:', this.cutoffData.filter(d => d.domicile === 'All India').slice(0, 3));
   }
 
   private parseCSVLine(line: string): string[] {
@@ -309,35 +331,29 @@ class WbjeeDataService {
       return [];
     }
     
-    // Filter cutoffs where user rank is eligible
-    const eligibleCutoffs = this.cutoffData.filter(cutoff => {
+    // Debug: Show available records for the selected domicile and category
+    const availableRecords = this.cutoffData.filter(cutoff => {
       const categoryMatch = this.categoryMatches(cutoff.category, normalizedCategory);
       const domicileMatch = this.domicileMatches(cutoff.domicile, normalizedDomicile);
-      const rankEligible = userRank >= cutoff.opening_rank && userRank <= cutoff.closing_rank;
-      
-      return categoryMatch && domicileMatch && rankEligible;
+      return categoryMatch && domicileMatch;
+    });
+    
+    console.log(`Found ${availableRecords.length} records matching category ${normalizedCategory} and domicile ${normalizedDomicile}`);
+    console.log('Available records sample:', availableRecords.slice(0, 3));
+    
+    // Filter cutoffs where user rank is eligible (rank should be <= closing rank)
+    const eligibleCutoffs = availableRecords.filter(cutoff => {
+      const rankEligible = userRank <= cutoff.closing_rank;
+      console.log(`Checking rank eligibility: ${userRank} <= ${cutoff.closing_rank} = ${rankEligible} for ${cutoff.college_name} ${cutoff.branch_name}`);
+      return rankEligible;
     });
 
     console.log(`Found ${eligibleCutoffs.length} eligible cutoffs for rank ${userRank}`);
     
     if (eligibleCutoffs.length === 0) {
-      // Debug: Show why no matches found
-      console.log('Debug: No matches found. Checking first 10 records:');
-      this.cutoffData.slice(0, 10).forEach((cutoff, idx) => {
-        const categoryMatch = this.categoryMatches(cutoff.category, normalizedCategory);
-        const domicileMatch = this.domicileMatches(cutoff.domicile, normalizedDomicile);
-        const rankEligible = userRank >= cutoff.opening_rank && userRank <= cutoff.closing_rank;
-        
-        console.log(`Record ${idx + 1}:`, {
-          college: cutoff.college_name,
-          category: cutoff.category,
-          domicile: cutoff.domicile,
-          opening: cutoff.opening_rank,
-          closing: cutoff.closing_rank,
-          categoryMatch,
-          domicileMatch,
-          rankEligible
-        });
+      console.log('No eligible cutoffs found. All available records:');
+      availableRecords.forEach((cutoff, idx) => {
+        console.log(`${idx + 1}. ${cutoff.college_name} - ${cutoff.branch_name}: Opening ${cutoff.opening_rank}, Closing ${cutoff.closing_rank}, User rank: ${userRank}`);
       });
     }
 
@@ -447,14 +463,6 @@ class WbjeeDataService {
   private domicileMatches(cutoffDomicile: string, userDomicile: string): boolean {
     const normalizedCutoff = this.normalizeDomicile(cutoffDomicile);
     const normalizedUser = this.normalizeDomicile(userDomicile);
-    
-    console.log('Domicile matching:', {
-      cutoffDomicile,
-      userDomicile,
-      normalizedCutoff,
-      normalizedUser,
-      matches: normalizedCutoff === normalizedUser
-    });
     
     return normalizedCutoff === normalizedUser;
   }
