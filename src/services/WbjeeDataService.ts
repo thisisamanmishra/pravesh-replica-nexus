@@ -160,6 +160,7 @@ class WbjeeDataService {
   private createFallbackData(): void {
     console.log('Creating fallback mock data');
     this.cutoffData = [
+      // Home State quota entries
       {
         college_name: "Jadavpur University",
         branch_name: "Computer Science and Engineering",
@@ -207,6 +208,57 @@ class WbjeeDataService {
         domicile: "Home State",
         opening_rank: 3001,
         closing_rank: 5000,
+        round: 1,
+        year: 2024
+      },
+      // All India quota entries (typically higher cutoffs)
+      {
+        college_name: "Jadavpur University",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "All India",
+        opening_rank: 1,
+        closing_rank: 200,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Jadavpur University",
+        branch_name: "Electrical Engineering",
+        category: "GENERAL",
+        domicile: "All India",
+        opening_rank: 201,
+        closing_rank: 400,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Calcutta University",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "All India",
+        opening_rank: 401,
+        closing_rank: 800,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Kalyani Government Engineering College",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "All India",
+        opening_rank: 801,
+        closing_rank: 1500,
+        round: 1,
+        year: 2024
+      },
+      {
+        college_name: "Jalpaiguri Government Engineering College",
+        branch_name: "Computer Science and Engineering",
+        category: "GENERAL",
+        domicile: "All India",
+        opening_rank: 1501,
+        closing_rank: 2500,
         round: 1,
         year: 2024
       }
