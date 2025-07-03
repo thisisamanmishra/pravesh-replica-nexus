@@ -1,5 +1,5 @@
+
 import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import PredictorForm from '@/components/predictor/PredictorForm';
@@ -17,10 +17,10 @@ const RankPredictor = () => {
   }>({ safe: [], moderate: [], ambitious: [] });
   
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('predictor');
   const [examType, setExamType] = useState('');
   const [wbjeePrediction, setWbjeePrediction] = useState<any>(null);
   const [selectedExamType, setSelectedExamType] = useState<string>("jee-main");
+  const [showResults, setShowResults] = useState(false);
 
   const handlePredict = (formData: any) => {
     setLoading(true);
@@ -39,7 +39,7 @@ const RankPredictor = () => {
       const results = PredictionService.getRecommendations(input);
       setPredictions(results);
       setLoading(false);
-      setActiveTab('results');
+      setShowResults(true);
     }, 1500);
   };
 
@@ -52,7 +52,7 @@ const RankPredictor = () => {
         domicile: form.domicile,
       });
       setLoading(false);
-      setActiveTab('results');
+      setShowResults(true);
     }, 1200);
   };
 
@@ -72,44 +72,41 @@ const RankPredictor = () => {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <div className="flex justify-center">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
-              <TabsTrigger value="predictor">Predictor</TabsTrigger>
-              <TabsTrigger value="results">Results</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="predictor">
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1">
-                <div className="space-y-4">
-                  <label htmlFor="exams" className="block font-medium text-gray-700 mb-1">Exam Type *</label>
-                  <select
-                    id="exams"
-                    value={selectedExamType}
-                    onChange={e => setSelectedExamType(e.target.value)}
-                    className="w-full rounded px-3 py-2 border border-gray-300 mb-4"
-                  >
-                    <option value="jee-main">JEE Main</option>
-                    <option value="jee-advanced">JEE Advanced</option>
-                    <option value="wbjee">WBJEE</option>
-                  </select>
-                  
-                  {selectedExamType === "wbjee" ? (
-                    <WbjeePredictorForm onPredict={handleWbjeePredict} loading={loading} />
-                  ) : (
-                    <PredictorForm onPredict={handlePredict} loading={loading} />
-                  )}
-                </div>
-              </div>
-              <div className="lg:col-span-2">
-                <PredictorInstructions />
+        {!showResults ? (
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <div className="space-y-4">
+                <label htmlFor="exams" className="block font-medium text-gray-700 mb-1">Exam Type *</label>
+                <select
+                  id="exams"
+                  value={selectedExamType}
+                  onChange={e => setSelectedExamType(e.target.value)}
+                  className="w-full rounded px-3 py-2 border border-gray-300 mb-4"
+                >
+                  <option value="jee-main">JEE Main</option>
+                  <option value="jee-advanced">JEE Advanced</option>
+                  <option value="wbjee">WBJEE</option>
+                </select>
+                
+                {selectedExamType === "wbjee" ? (
+                  <WbjeePredictorForm onPredict={handleWbjeePredict} loading={loading} />
+                ) : (
+                  <PredictorForm onPredict={handlePredict} loading={loading} />
+                )}
               </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="results">
+            <div className="lg:col-span-2">
+              <PredictorInstructions />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <button
+              onClick={() => setShowResults(false)}
+              className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              ← Back to Predictor
+            </button>
             {(selectedExamType === "wbjee" && wbjeePrediction) ? (
               <WbjeePredictionResults
                 userRank={wbjeePrediction.rank}
@@ -120,11 +117,11 @@ const RankPredictor = () => {
               <EnhancedPredictionResults
                 predictions={predictions}
                 examType={examType}
-                onBackToPredictor={() => setActiveTab('predictor')}
+                onBackToPredictor={() => setShowResults(false)}
               />
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

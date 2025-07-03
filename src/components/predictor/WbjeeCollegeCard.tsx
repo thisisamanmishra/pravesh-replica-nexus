@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { WbjeeCollegeData } from "@/services/WbjeeDataService";
 
 interface WbjeeCollegeCardProps {
@@ -10,7 +9,7 @@ interface WbjeeCollegeCardProps {
   domicile: string;
 }
 
-export default function WbjeeCollegeCard({ college, userRank, category, domicile }: WbjeeCollegeCardProps) {
+export default function WbjeeCollegeCard({ college }: WbjeeCollegeCardProps) {
   return (
     <Card className="mb-4">
       <CardHeader>
@@ -18,68 +17,15 @@ export default function WbjeeCollegeCard({ college, userRank, category, domicile
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {college.branches.map((branch, idx) => {
-            const latestCutoff = branch.cutoffs[0]; // Already sorted by round
-            
-            // Determine admission chance based on user rank position within the range
-            const rankPosition = (userRank - latestCutoff.opening_rank) / (latestCutoff.closing_rank - latestCutoff.opening_rank);
-            let admissionChance: 'High' | 'Moderate' | 'Low';
-            
-            if (rankPosition <= 0.3) {
-              admissionChance = 'High';
-            } else if (rankPosition <= 0.7) {
-              admissionChance = 'Moderate';
-            } else {
-              admissionChance = 'Low';
-            }
-            
-            return (
-              <div key={idx} className="border rounded-lg p-3 bg-gray-50">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-semibold text-gray-800">{branch.name}</h4>
-                    <p className="text-sm text-gray-600">
-                      Round {latestCutoff.round} • {latestCutoff.year}
-                    </p>
-                  </div>
-                  <Badge 
-                    variant={admissionChance === 'High' ? 'default' : 
-                            admissionChance === 'Moderate' ? 'secondary' : 'outline'}
-                    className={
-                      admissionChance === 'High' ? 'bg-green-100 text-green-800' :
-                      admissionChance === 'Moderate' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }
-                  >
-                    {admissionChance} Chance
-                  </Badge>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Opening Rank:</span>
-                    <span className="ml-2 font-medium">{latestCutoff.opening_rank}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Closing Rank:</span>
-                    <span className="ml-2 font-medium">{latestCutoff.closing_rank}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Your Rank:</span>
-                    <span className="ml-2 font-medium text-blue-600">{userRank}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Category:</span>
-                    <span className="ml-2 font-medium">{latestCutoff.category}</span>
-                  </div>
-                </div>
-
-                <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-700">
-                  ✅ You are eligible! Your rank {userRank} is between the opening rank ({latestCutoff.opening_rank}) and closing rank ({latestCutoff.closing_rank}).
+          {college.branches.map((branch, idx) => (
+            <div key={idx} className="border rounded-lg p-3 bg-gray-50">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h4 className="font-semibold text-gray-800">{branch.name}</h4>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
