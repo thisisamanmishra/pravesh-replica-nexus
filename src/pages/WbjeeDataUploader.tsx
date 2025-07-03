@@ -3,8 +3,6 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import WbjeeDataImportPanel from "@/components/WbjeeDataImportPanel";
-import WbjeeCutoffScraperPanel from "@/components/WbjeeCutoffScraperPanel";
 
 export default function WbjeeDataUploader() {
   const { isAdmin } = useAuth();
@@ -27,8 +25,17 @@ export default function WbjeeDataUploader() {
   return (
     <ProtectedRoute requireAdmin>
       <div className="max-w-2xl mx-auto my-12 space-y-6">
-        <WbjeeDataImportPanel />
-        <WbjeeCutoffScraperPanel />
+        <Card>
+          <CardHeader>
+            <CardTitle>WBJEE Data Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600">
+              WBJEE data import functionality has been removed. 
+              The college predictor now uses the built-in data service.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </ProtectedRoute>
   );
