@@ -81,7 +81,7 @@ const Index = () => {
                 <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 font-bold text-xl px-12 py-6 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 group">
                   <Calculator className="w-6 h-6 mr-3 group-hover:animate-bounce" />
                   <span className="relative">
-                    Predict Your Rank
+                    Predict Your College
                     <Sparkles className="w-5 h-5 absolute -top-2 -right-6 text-yellow-300 animate-pulse" />
                   </span>
                 </Button>
