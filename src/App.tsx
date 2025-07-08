@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -15,6 +16,7 @@ import RankPredictor from "./pages/RankPredictor";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import WbjeeDataUploader from "./pages/WbjeeDataUploader";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,14 @@ const App: React.FC = () => (
               <Route path="/college/:id" element={<CollegeDetails />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/rank-predictor" element={<RankPredictor />} />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } 
+              />
               <Route 
                 path="/admin" 
                 element={

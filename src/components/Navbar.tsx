@@ -95,9 +95,11 @@ const Navbar = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center w-full">
+                        <User className="w-4 h-4 mr-2" />
+                        Profile
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut()}>
@@ -183,6 +185,12 @@ const Navbar = () => {
               
               {user ? (
                 <div className="flex flex-col space-y-2 pt-2 border-t">
+                  <Link to="/profile" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </Button>
+                  </Link>
                   {isAdmin && (
                     <Link to="/admin" onClick={() => setIsOpen(false)}>
                       <Button variant="outline" size="sm" className="w-full justify-start">
