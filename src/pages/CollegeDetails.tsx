@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import Navbar from '@/components/Navbar';
 import ContactModal from '@/components/ContactModal';
 import { useCollege } from '@/hooks/useColleges';
+import useEmblaCarousel from 'embla-carousel-react';
 
 const CollegeDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,8 @@ const CollegeDetails = () => {
 
   // Animation state
   const [animationStage, setAnimationStage] = useState(0);
+  const [showFullDesc, setShowFullDesc] = useState(false);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,11 +32,16 @@ const CollegeDetails = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveImageIndex((prev) => (prev + 1) % sampleImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!emblaApi) return;
+    const onSelect = () => setActiveImageIndex(emblaApi.selectedScrollSnap());
+    emblaApi.on('select', onSelect);
+    const timer = setInterval(() => emblaApi.scrollNext(), 5000);
+    onSelect();
+    return () => {
+      emblaApi.off('select', onSelect);
+      clearInterval(timer);
+    };
+  }, [emblaApi]);
 
   // SEO: set dynamic title and description (must be declared before any early returns)
   useEffect(() => {
@@ -55,6 +63,28 @@ const CollegeDetails = () => {
       document.head.appendChild(canonical);
     }
     canonical.setAttribute('href', window.location.href);
+  }, [college]);
+
+  // Structured Data (JSON-LD)
+  useEffect(() => {
+    if (!college) return;
+    const jsonLd: any = {
+      "@context": "https://schema.org",
+      "@type": "CollegeOrUniversity",
+      name: college.name,
+      url: college.website_url || undefined,
+      address: college.address || undefined,
+      telephone: college.phone || undefined,
+      image: college.image_url || undefined,
+      aggregateRating: college.rating ? { "@type": "AggregateRating", ratingValue: college.rating, ratingCount: 1 } : undefined,
+    };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(jsonLd, (k, v) => (v === undefined ? undefined : v));
+    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script);
+    };
   }, [college]);
 
   const extractYouTubeVideoId = (url: string) => {
@@ -131,6 +161,7 @@ const CollegeDetails = () => {
   }
 
   const videoId = college.youtube_video_url ? extractYouTubeVideoId(college.youtube_video_url) : null;
+  const descriptionText = college.description || `${college.name} is a premier ${college.category.toLowerCase()} institution located in ${college.location}. Known for its academic excellence and innovative approach to education, the college offers world-class facilities and experienced faculty to help students achieve their academic and career goals.`;
 
 
 
@@ -143,19 +174,20 @@ const CollegeDetails = () => {
         <div className="relative h-[60vh] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10"></div>
           
-          {/* Image Carousel */}
-          <div className="relative w-full h-full">
-            {sampleImages.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`${college.name} - Image ${index + 1}`}
-                loading="lazy"
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-                  index === activeImageIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            ))}
+          {/* Image Carousel (Embla) */}
+          <div className="relative w-full h-full" ref={emblaRef}>
+            <div className="flex h-full">
+              {sampleImages.map((image, index) => (
+                <div key={index} className="relative min-w-full h-full">
+                  <img
+                    src={image}
+                    alt={`${college.name} - Image ${index + 1}`}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
           
           {/* Hero Content */}
@@ -235,7 +267,7 @@ const CollegeDetails = () => {
             {sampleImages.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setActiveImageIndex(index)}
+                onClick={() => emblaApi && emblaApi.scrollTo(index)}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   index === activeImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'
                 }`}
@@ -265,9 +297,19 @@ const CollegeDetails = () => {
                     <CardTitle className="text-xl font-bold">About {college.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <p className="text-gray-700 leading-relaxed mb-6">
-                      {college.description || `${college.name} is a premier ${college.category.toLowerCase()} institution located in ${college.location}. Known for its academic excellence and innovative approach to education, the college offers world-class facilities and experienced faculty to help students achieve their academic and career goals.`}
+                    <p className="text-gray-700 leading-relaxed mb-3">
+                      {showFullDesc ? descriptionText : descriptionText.slice(0, 280)}
+                      {descriptionText.length > 280 && !showFullDesc && '...'}
                     </p>
+                    {descriptionText.length > 280 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowFullDesc((v) => !v)}
+                        className="text-blue-700 font-medium hover:underline"
+                      >
+                        {showFullDesc ? 'Show less' : 'Read more'}
+                      </button>
+                    )}
                     
                     {/* Quick Stats Grid */}
                     <div className="grid md:grid-cols-3 gap-4">
