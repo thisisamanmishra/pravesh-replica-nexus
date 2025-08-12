@@ -41,24 +41,42 @@ const CollegeDetails = () => {
     return match ? match[1] : null;
   };
 
-  // Sample data for enhanced features
-  const sampleImages = [
-    college?.image_url || "https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1523050854058-8df90110c9d1?w=800&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&h=400&fit=crop"
-  ];
+  // Images: prefer DB images, fallback to stock
+  const sampleImages = (
+    (Array.isArray(college?.additional_images) && college!.additional_images!.length > 0)
+      ? [college?.image_url, ...college!.additional_images!]
+      : [
+          college?.image_url || "https://images.unsplash.com/photo-1562774053-701939374585?w=800&h=400&fit=crop",
+          "https://images.unsplash.com/photo-1523050854058-8df90110c9d1?w=800&h=400&fit=crop",
+          "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&h=400&fit=crop"
+        ]
+  ).filter(Boolean) as string[];
 
-  const facilities = [
-    { name: "Library", icon: BookOpen, rating: 4.5 },
-    { name: "Sports Complex", icon: TrendingUp, rating: 4.2 },
-    { name: "Hostels", icon: Building, rating: 4.0 },
-    { name: "Labs", icon: Award, rating: 4.8 }
-  ];
+  // Facilities: derive from DB if available
+  const facilities = (() => {
+    const raw = (college?.facilities as Record<string, { available?: boolean; rating?: string }> | null) || null;
+    if (!raw) return [] as { name: string; icon: any; rating: number }[];
+    const iconMap: Record<string, any> = {
+      library: BookOpen,
+      sports: TrendingUp,
+      hostel: Building,
+      hostels: Building,
+      lab: Award,
+      labs: Award,
+    };
+    return Object.entries(raw)
+      .filter(([, v]) => v?.available)
+      .map(([key, v]) => ({
+        name: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        icon: iconMap[key.toLowerCase()] || Building,
+        rating: Number(v?.rating ?? 4) || 4,
+      }));
+  })();
 
   const placementStats = {
-    averagePackage: "₹8.5 LPA",
-    highestPackage: "₹45 LPA",
-    placementRate: 92
+    averagePackage: (college?.placement_stats as any)?.average_package ?? '—',
+    highestPackage: (college?.placement_stats as any)?.highest_package ?? '—',
+    placementRate: Number(String((college?.placement_stats as any)?.placement_rate ?? 0).toString().replace(/[^0-9.]/g, '')) || 0,
   };
 
   if (isLoading) {
@@ -92,6 +110,29 @@ const CollegeDetails = () => {
 
   const videoId = college.youtube_video_url ? extractYouTubeVideoId(college.youtube_video_url) : null;
 
+  // SEO: set dynamic title and description
+  useEffect(() => {
+    if (!college) return;
+    document.title = `${college.name} | College Details & Courses`;
+    const desc = `${college.name} in ${college.location}. Courses, placements, facilities, fees, contact, and more.`;
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', desc.slice(0, 155));
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.href);
+  }, [college]);
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Navbar />
@@ -108,6 +149,7 @@ const CollegeDetails = () => {
                 key={index}
                 src={image}
                 alt={`${college.name} - Image ${index + 1}`}
+                loading="lazy"
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
                   index === activeImageIndex ? 'opacity-100' : 'opacity-0'
                 }`}
@@ -250,6 +292,56 @@ const CollegeDetails = () => {
                         <p className="text-gray-600 text-sm font-medium">Rating</p>
                       </div>
                     </div>
+
+                    {/* Key Details */}
+                    {(college.accreditation || college.campus_area) && (
+                      <div className="grid md:grid-cols-2 gap-4 mt-6">
+                        {college.accreditation && (
+                          <div className="p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-indigo-100">
+                            <h4 className="font-semibold mb-1">Accreditation</h4>
+                            <p className="text-sm text-muted-foreground">{college.accreditation}</p>
+                          </div>
+                        )}
+                        {college.campus_area && (
+                          <div className="p-4 rounded-lg bg-gradient-to-r from-emerald-50 to-emerald-100">
+                            <h4 className="font-semibold mb-1">Campus Area</h4>
+                            <p className="text-sm text-muted-foreground">{college.campus_area}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Admission Process */}
+                    {college.admission_process && (
+                      <div className="mt-6">
+                        <h3 className="font-bold mb-2">Admission Process</h3>
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">{college.admission_process}</p>
+                      </div>
+                    )}
+
+                    {/* Awards & Scholarships */}
+                    {(Array.isArray(college.awards) && (college.awards as string[]).length > 0) && (
+                      <div className="mt-6">
+                        <h3 className="font-bold mb-2">Awards</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {(college.awards as string[]).map((a, i) => (
+                            <Badge key={i} variant="secondary">{a}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(Array.isArray(college.scholarships) && (college.scholarships as string[]).length > 0) && (
+                      <div className="mt-6">
+                        <h3 className="font-bold mb-2">Scholarships</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {(college.scholarships as string[]).map((s, i) => (
+                            <Badge key={i} variant="outline">{s}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                   </CardContent>
                 </Card>
 
@@ -291,12 +383,15 @@ const CollegeDetails = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="grid md:grid-cols-2 gap-3">
-                      {['Computer Science', 'Mechanical Engineering', 'Electronics', 'Civil Engineering', 'MBA', 'BBA'].map((course, index) => (
-                        <div key={index} className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-500 hover:shadow-md transition-all duration-300">
-                          <h4 className="font-semibold">{course}</h4>
-                          <p className="text-gray-600 text-sm">4 Years • Full Time</p>
-                        </div>
-                      ))}
+                      {Array.isArray(college.courses_offered) && college.courses_offered.length > 0 ? (
+                        (college.courses_offered as string[]).map((course, index) => (
+                          <div key={index} className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-500 hover:shadow-md transition-all duration-300">
+                            <h4 className="font-semibold">{course}</h4>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted-foreground">Course information will be available soon.</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -414,14 +509,33 @@ const CollegeDetails = () => {
                   Get in Touch
                 </Button>
                 
-                <Button 
-                  variant="outline" 
-                  className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                  size="lg"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Visit Website
-                </Button>
+                {college.website_url ? (
+                  <Button 
+                    asChild
+                    variant="outline" 
+                    className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                    size="lg"
+                  >
+                    <a
+                      href={college.website_url.startsWith("http") ? college.website_url : `https://${college.website_url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2 inline" />
+                      Visit Website
+                    </a>
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    disabled
+                    className="w-full border-2 font-bold py-3 shadow-md"
+                    size="lg"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Visit Website
+                  </Button>
+                )}
                 
                 <Button 
                   variant="outline" 
