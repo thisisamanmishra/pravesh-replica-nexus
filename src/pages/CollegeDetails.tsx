@@ -35,6 +35,28 @@ const CollegeDetails = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // SEO: set dynamic title and description (must be declared before any early returns)
+  useEffect(() => {
+    if (!college) return;
+    document.title = `${college.name} | College Details & Courses`;
+    const desc = `${college.name} in ${college.location}. Courses, placements, facilities, fees, contact, and more.`;
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', desc.slice(0, 155));
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.href);
+  }, [college]);
+
   const extractYouTubeVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
@@ -110,27 +132,6 @@ const CollegeDetails = () => {
 
   const videoId = college.youtube_video_url ? extractYouTubeVideoId(college.youtube_video_url) : null;
 
-  // SEO: set dynamic title and description
-  useEffect(() => {
-    if (!college) return;
-    document.title = `${college.name} | College Details & Courses`;
-    const desc = `${college.name} in ${college.location}. Courses, placements, facilities, fees, contact, and more.`;
-    let meta = document.querySelector('meta[name="description"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'description');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', desc.slice(0, 155));
-
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', window.location.href);
-  }, [college]);
 
 
   return (
