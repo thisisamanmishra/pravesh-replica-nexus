@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Search, Filter, MapPin, Star, BookOpen, Users, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, MapPin, Star, BookOpen, Users, ChevronDown, Building, Award, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,6 +32,26 @@ const Colleges = () => {
 
     return matchesSearch && matchesCategory && matchesLocation && matchesType;
   });
+
+  // SEO: dynamic title, meta description, canonical
+  useEffect(() => {
+    document.title = 'Top Colleges | Explore courses, fees, cutoffs';
+    const description = 'Browse colleges by location, category, fees, rankings, courses, facilities, and placements.';
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', description.slice(0, 155));
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.href);
+  }, []);
 
   if (isLoading) {
     return (
@@ -181,7 +201,8 @@ const Colleges = () => {
                   <div className="relative w-48 h-44 flex-shrink-0">
                     <img 
                       src={college.image_url || "https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=300&fit=crop"} 
-                      alt={college.name}
+                      alt={`${college.name} campus`}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                     <Badge className="absolute top-3 left-3 bg-green-600">
@@ -240,15 +261,65 @@ const Colleges = () => {
                       </div>
                     </div>
                     
+                    {Array.isArray(college.courses_offered) && (college.courses_offered as string[]).length > 0 && (
+                      <div className="mb-3">
+                        <div className="text-xs text-gray-600 mb-1">Top Courses</div>
+                        <div className="flex flex-wrap gap-2">
+                          {(college.courses_offered as string[]).slice(0,3).map((c, i) => (
+                            <Badge key={i} variant="secondary">{c}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(() => {
+                      const raw = (college as any).facilities as Record<string, { available?: boolean }> | undefined;
+                      if (!raw) return null;
+                      const entries = Object.entries(raw).filter(([, v]) => v?.available).slice(0, 3);
+                      if (entries.length === 0) return null;
+                      const iconMap: Record<string, any> = {
+                        library: BookOpen,
+                        sports: TrendingUp,
+                        hostel: Building,
+                        hostels: Building,
+                        lab: Award,
+                        labs: Award,
+                      };
+                      return (
+                        <div className="mb-4 flex flex-wrap gap-3">
+                          {entries.map(([key], idx) => {
+                            const IconComp = iconMap[key.toLowerCase()] || Building;
+                            const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                            return (
+                              <div key={idx} className="inline-flex items-center text-xs bg-gray-100 rounded-full px-3 py-1">
+                                <IconComp className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
+                                <span>{label}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+
                     <div className="flex space-x-3">
                       <Link to={`/college/${college.id}`} className="flex-1">
                         <Button size="sm" className="w-full">
                           View Details
                         </Button>
                       </Link>
-                      <Button size="sm" variant="outline">
-                        Compare
-                      </Button>
+                      {college.website_url ? (
+                        <Button asChild size="sm" variant="outline">
+                          <a
+                            href={college.website_url.startsWith('http') ? college.website_url : `https://${college.website_url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Visit Website
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline">Compare</Button>
+                      )}
                     </div>
                   </div>
                 </div>
