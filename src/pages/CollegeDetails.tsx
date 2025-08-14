@@ -166,110 +166,132 @@ const CollegeDetails = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10">
       <Navbar />
       
-      {/* Hero Section with Image Carousel */}
-      <div className={`relative overflow-hidden transition-all duration-1000 ${animationStage >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-        <div className="relative h-[60vh] overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent z-10"></div>
+      {/* Hero Section - Full Width */}
+      <div className={`relative overflow-hidden transition-all duration-1500 ease-out ${animationStage >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+        <div className="relative h-[85vh] overflow-hidden">
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/40 z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-10"></div>
           
-          {/* Image Carousel (Embla) */}
-          <div className="relative w-full h-full" ref={emblaRef}>
+          {/* Image Carousel */}
+          <div className="absolute inset-0" ref={emblaRef}>
             <div className="flex h-full">
               {sampleImages.map((image, index) => (
                 <div key={index} className="relative min-w-full h-full">
                   <img
                     src={image}
-                    alt={`${college.name} - Image ${index + 1}`}
+                    alt={`${college.name} - Campus ${index + 1}`}
                     loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                   />
                 </div>
               ))}
             </div>
           </div>
           
-          {/* Hero Content */}
-          <div className="absolute inset-0 z-20 flex items-center">
-            <div className="container mx-auto px-6">
-              <div className="max-w-4xl">
-                <div className="flex items-center space-x-4 mb-6 animate-slide-in-left">
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 text-sm font-bold shadow-lg">
-                    <Award className="w-4 h-4 mr-2" />
-                    Rank #{college.national_ranking || 'N/A'}
-                  </Badge>
-                  <div className="flex items-center bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
-                    <Star className="w-5 h-5 text-yellow-400 fill-current mr-2" />
-                    <span className="font-bold text-white text-lg">{college.rating || 4.0}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsLiked(!isLiked)}
-                    className="text-white hover:bg-white/20 transition-all duration-300"
-                  >
-                    <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/20 transition-all duration-300"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </Button>
+          {/* Hero Content - Floating */}
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <div className="text-center max-w-5xl px-6">
+              
+              {/* Top Badges */}
+              <div className="flex items-center justify-center space-x-4 mb-8 animate-fade-in">
+                <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl transform hover:scale-105 transition-all duration-300">
+                  <Award className="w-5 h-5 mr-2 inline" />
+                  Rank #{college.national_ranking || 'N/A'}
                 </div>
-                
-                <h1 className="text-4xl md:text-6xl font-black mb-6 text-white leading-tight animate-fade-in-up">
-                  {college.name}
-                </h1>
-                
-                <div className="flex flex-wrap items-center gap-6 text-white/90 text-lg mb-8 animate-slide-in-right">
-                  <div className="flex items-center">
-                    <MapPin className="w-5 h-5 mr-2 text-blue-300" />
-                    <span>{college.location}</span>
-                  </div>
-                  {college.established && (
-                    <div className="flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-blue-300" />
-                      <span>Est. {college.established}</span>
-                    </div>
-                  )}
-                  <Badge variant="outline" className="bg-white/10 backdrop-blur-sm text-white border-white/30 capitalize px-3 py-1">
-                    <GraduationCap className="w-4 h-4 mr-2" />
-                    {college.college_type}
-                  </Badge>
+                <div className="bg-white/15 backdrop-blur-xl rounded-full px-6 py-3 border border-white/20 shadow-2xl">
+                  <Star className="w-6 h-6 text-yellow-400 fill-current mr-3 inline" />
+                  <span className="font-bold text-white text-xl">{college.rating || 4.0}</span>
                 </div>
-                
-                <div className="flex flex-wrap gap-4 animate-fade-in-up">
+              </div>
+              
+              {/* Main Title */}
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 text-white leading-none animate-scale-in tracking-tight">
+                {college.name}
+              </h1>
+              
+              {/* Subtitle Info */}
+              <div className="flex flex-wrap items-center justify-center gap-8 text-white/90 text-xl mb-12 animate-slide-in-right">
+                <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
+                  <MapPin className="w-6 h-6 mr-3 text-blue-300" />
+                  <span className="font-medium">{college.location}</span>
+                </div>
+                {college.established && (
+                  <div className="flex items-center bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
+                    <Calendar className="w-6 h-6 mr-3 text-blue-300" />
+                    <span className="font-medium">Est. {college.established}</span>
+                  </div>
+                )}
+                <div className="bg-gradient-to-r from-primary/20 to-accent/20 backdrop-blur-md text-white border border-white/30 px-4 py-2 rounded-full capitalize font-medium">
+                  <GraduationCap className="w-5 h-5 mr-2 inline" />
+                  {college.college_type}
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-wrap justify-center gap-6 animate-fade-in-up">
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-bold px-8 py-4 text-lg shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-500 rounded-full"
+                >
+                  Apply Now
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="bg-white/15 backdrop-blur-xl border-white/30 text-white hover:bg-white/25 font-bold px-8 py-4 text-lg shadow-2xl transform hover:-translate-y-2 transition-all duration-500 rounded-full"
+                  onClick={() => setIsContactModalOpen(true)}
+                >
+                  <MessageCircle className="w-5 h-5 mr-3" />
+                  Get Details
+                </Button>
+                {college.website_url && (
                   <Button 
                     size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-6 py-3 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
+                    variant="ghost"
+                    className="text-white hover:bg-white/20 font-bold px-8 py-4 text-lg transform hover:-translate-y-2 transition-all duration-500 rounded-full"
+                    onClick={() => window.open(college.website_url, '_blank')}
                   >
-                    Apply Now
+                    <Globe className="w-5 h-5 mr-3" />
+                    Visit Website
                   </Button>
-                  <Button 
-                    size="lg"
-                    variant="outline"
-                    className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 font-bold px-6 py-3 shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-                    onClick={() => setIsContactModalOpen(true)}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Get Info
-                  </Button>
-                </div>
+                )}
+              </div>
+              
+              {/* Interactive Elements */}
+              <div className="flex justify-center space-x-6 mt-8">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsLiked(!isLiked)}
+                  className="text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-110"
+                >
+                  <Heart className={`w-6 h-6 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 transition-all duration-300 transform hover:scale-110"
+                >
+                  <Share2 className="w-6 h-6" />
+                </Button>
               </div>
             </div>
           </div>
           
-          {/* Image Navigation Dots */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex space-x-2">
+          {/* Navigation Dots */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex space-x-3">
             {sampleImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => emblaApi && emblaApi.scrollTo(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === activeImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === activeImageIndex 
+                    ? 'bg-white scale-150 shadow-lg' 
+                    : 'bg-white/50 hover:bg-white/75 hover:scale-125'
                 }`}
               />
             ))}
@@ -278,26 +300,26 @@ const CollegeDetails = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-4 gap-12">
           {/* Main Content Area */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6 bg-white shadow-md rounded-xl p-1 h-12">
-                <TabsTrigger value="overview" className="font-medium text-sm">Overview</TabsTrigger>
-                <TabsTrigger value="courses" className="font-medium text-sm">Courses</TabsTrigger>
-                <TabsTrigger value="placements" className="font-medium text-sm">Placements</TabsTrigger>
-                <TabsTrigger value="facilities" className="font-medium text-sm">Facilities</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 mb-8 bg-card/60 backdrop-blur-xl shadow-2xl rounded-2xl p-2 h-16 border border-border/50">
+                <TabsTrigger value="overview" className="font-semibold text-base rounded-xl transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg">Overview</TabsTrigger>
+                <TabsTrigger value="courses" className="font-semibold text-base rounded-xl transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg">Courses</TabsTrigger>
+                <TabsTrigger value="placements" className="font-semibold text-base rounded-xl transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg">Placements</TabsTrigger>
+                <TabsTrigger value="facilities" className="font-semibold text-base rounded-xl transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg">Facilities</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="overview" className="space-y-6">
+              <TabsContent value="overview" className="space-y-8 animate-fade-in">
                 {/* About Section */}
-                <Card className="overflow-hidden shadow-lg border-0 bg-gradient-to-br from-white to-blue-50/30 hover:shadow-xl transition-all duration-300">
-                  <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                    <CardTitle className="text-xl font-bold">About {college.name}</CardTitle>
+                <Card className="overflow-hidden shadow-2xl border-0 bg-card/80 backdrop-blur-xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 rounded-3xl">
+                  <CardHeader className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8">
+                    <CardTitle className="text-2xl font-bold">About {college.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6">
-                    <p className="text-gray-700 leading-relaxed mb-3">
+                  <CardContent className="p-8">
+                    <p className="text-foreground/80 leading-relaxed mb-6 text-lg">
                       {showFullDesc ? descriptionText : descriptionText.slice(0, 280)}
                       {descriptionText.length > 280 && !showFullDesc && '...'}
                     </p>
@@ -305,34 +327,34 @@ const CollegeDetails = () => {
                       <button
                         type="button"
                         onClick={() => setShowFullDesc((v) => !v)}
-                        className="text-blue-700 font-medium hover:underline"
+                        className="text-primary font-semibold hover:underline transition-all duration-300 transform hover:scale-105"
                       >
                         {showFullDesc ? 'Show less' : 'Read more'}
                       </button>
                     )}
                     
                     {/* Quick Stats Grid */}
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-3 gap-6 mt-8">
                       {college.total_students && (
-                        <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                          <Users className="w-10 h-10 mx-auto text-blue-600 mb-2" />
-                          <p className="text-2xl font-bold text-blue-600">{college.total_students.toLocaleString()}</p>
-                          <p className="text-gray-600 text-sm font-medium">Students</p>
+                        <div className="group text-center p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
+                          <Users className="w-12 h-12 mx-auto text-primary mb-4 group-hover:scale-110 transition-transform duration-300" />
+                          <p className="text-3xl font-bold text-primary">{college.total_students.toLocaleString()}</p>
+                          <p className="text-muted-foreground font-medium mt-2">Students</p>
                         </div>
                       )}
                       
                       {college.total_courses && (
-                        <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
-                          <BookOpen className="w-10 h-10 mx-auto text-green-600 mb-2" />
-                          <p className="text-2xl font-bold text-green-600">{college.total_courses}</p>
-                          <p className="text-gray-600 text-sm font-medium">Courses</p>
+                        <div className="group text-center p-6 bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-2xl border border-secondary/20 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
+                          <BookOpen className="w-12 h-12 mx-auto text-secondary mb-4 group-hover:scale-110 transition-transform duration-300" />
+                          <p className="text-3xl font-bold text-secondary">{college.total_courses}</p>
+                          <p className="text-muted-foreground font-medium mt-2">Courses</p>
                         </div>
                       )}
                       
-                      <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
-                        <Star className="w-10 h-10 mx-auto text-purple-600 mb-2" />
-                        <p className="text-2xl font-bold text-purple-600">{college.rating || 4.0}/5</p>
-                        <p className="text-gray-600 text-sm font-medium">Rating</p>
+                      <div className="group text-center p-6 bg-gradient-to-br from-accent/5 to-accent/10 rounded-2xl border border-accent/20 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
+                        <Star className="w-12 h-12 mx-auto text-accent mb-4 group-hover:scale-110 transition-transform duration-300" />
+                        <p className="text-3xl font-bold text-accent">{college.rating || 4.0}/5</p>
+                        <p className="text-muted-foreground font-medium mt-2">Rating</p>
                       </div>
                     </div>
 
@@ -502,120 +524,122 @@ const CollegeDetails = () => {
             </Tabs>
           </div>
 
-          {/* Sidebar - Fixed overlapping issue */}
+          {/* Floating Sidebar */}
           <div className="lg:col-span-1">
-            <div className="space-y-6">
+            <div className="sticky top-6 space-y-6">
               {/* Quick Info Card */}
-              <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-indigo-50/50">
-                <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-lg font-bold">Quick Information</CardTitle>
+              <Card className="overflow-hidden shadow-2xl border-0 bg-card/80 backdrop-blur-xl hover:shadow-3xl transition-all duration-500 transform hover:-translate-y-1 rounded-3xl">
+                <CardHeader className="text-center pb-4 bg-gradient-to-r from-primary/10 to-secondary/10">
+                  <CardTitle className="text-xl font-bold">Quick Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 pt-0">
-                  <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Category</p>
-                    <Badge className="bg-blue-600 text-white capitalize font-semibold text-xs">
+                <CardContent className="space-y-6 p-6">
+                  <div className="group p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl border border-primary/20 hover:shadow-lg transition-all duration-300">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Category</p>
+                    <Badge className="bg-gradient-to-r from-primary to-secondary text-primary-foreground capitalize font-bold px-4 py-2 rounded-full">
                       {college.category}
                     </Badge>
                   </div>
                   
-                  <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-100 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Fee Range</p>
-                    <p className="font-bold text-green-600">
+                  <div className="group p-4 bg-gradient-to-r from-secondary/5 to-secondary/10 rounded-2xl border border-secondary/20 hover:shadow-lg transition-all duration-300">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Fee Range</p>
+                    <p className="font-bold text-secondary text-lg">
                       {college.fees_range || '₹25L - 30L'}
                     </p>
                   </div>
                   
-                  <div className="p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Cutoff Information</p>
-                    <p className="font-semibold text-purple-600 text-sm">
+                  <div className="group p-4 bg-gradient-to-r from-accent/5 to-accent/10 rounded-2xl border border-accent/20 hover:shadow-lg transition-all duration-300">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Cutoff Information</p>
+                    <p className="font-semibold text-accent">
                       {college.cutoff_info || 'CAT 99+ percentile'}
                     </p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Action Buttons - Fixed spacing */}
-              <div className="space-y-4">
-                <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                  size="lg"
-                >
-                  Apply Now
-                </Button>
-                
-                <Button 
-                  onClick={() => setIsContactModalOpen(true)}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                  size="lg"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Get in Touch
-                </Button>
-                
-                {college.website_url ? (
+              {/* Action Buttons */}
+              <Card className="overflow-hidden shadow-2xl border-0 bg-card/80 backdrop-blur-xl rounded-3xl">
+                <CardContent className="p-6 space-y-4">
                   <Button 
-                    asChild
-                    variant="outline" 
-                    className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                    className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-bold py-4 text-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 rounded-2xl"
                     size="lg"
                   >
-                    <a
-                      href={college.website_url.startsWith("http") ? college.website_url : `https://${college.website_url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    Apply Now
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => setIsContactModalOpen(true)}
+                    className="w-full bg-gradient-to-r from-secondary to-accent hover:from-secondary/90 hover:to-accent/90 text-primary-foreground font-bold py-4 text-lg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 rounded-2xl"
+                    size="lg"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-3" />
+                    Get in Touch
+                  </Button>
+                  
+                  {college.website_url ? (
+                    <Button 
+                      asChild
+                      variant="outline" 
+                      className="w-full border-2 border-primary/30 hover:bg-primary/10 font-bold py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 rounded-2xl"
+                      size="lg"
                     >
-                      <ExternalLink className="w-4 h-4 mr-2 inline" />
+                      <a
+                        href={college.website_url.startsWith("http") ? college.website_url : `https://${college.website_url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="w-5 h-5 mr-3" />
+                        Visit Website
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      disabled
+                      className="w-full border-2 border-muted font-bold py-4 text-lg shadow-lg rounded-2xl"
+                      size="lg"
+                    >
+                      <ExternalLink className="w-5 h-5 mr-3" />
                       Visit Website
-                    </a>
-                  </Button>
-                ) : (
+                    </Button>
+                  )}
+                  
                   <Button 
                     variant="outline" 
-                    disabled
-                    className="w-full border-2 font-bold py-3 shadow-md"
+                    className="w-full border-2 border-accent/30 hover:bg-accent/10 font-bold py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 rounded-2xl"
                     size="lg"
                   >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Visit Website
+                    Download Brochure
                   </Button>
-                )}
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full border-2 hover:bg-gray-50 font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                  size="lg"
-                >
-                  Download Brochure
-                </Button>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Contact Info */}
-              <Card className="shadow-lg border-0">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold">Contact Information</CardTitle>
+              <Card className="overflow-hidden shadow-2xl border-0 bg-card/80 backdrop-blur-xl rounded-3xl">
+                <CardHeader className="pb-4 bg-gradient-to-r from-muted/20 to-muted/10">
+                  <CardTitle className="text-lg font-bold">Contact Information</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 pt-0">
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <Phone className="w-4 h-4 mr-3 flex-shrink-0" />
-                    <span>{college.phone ? college.phone : "Not available"}</span>
+                <CardContent className="space-y-4 p-6">
+                  <div className="flex items-center p-3 bg-muted/20 rounded-xl hover:bg-muted/30 transition-all duration-300">
+                    <Phone className="w-5 h-5 mr-4 flex-shrink-0 text-primary" />
+                    <span className="font-medium">{college.phone || "Not available"}</span>
                   </div>
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <Mail className="w-4 h-4 mr-3 flex-shrink-0" />
-                    <span>{college.email ? college.email : "Not available"}</span>
+                  <div className="flex items-center p-3 bg-muted/20 rounded-xl hover:bg-muted/30 transition-all duration-300">
+                    <Mail className="w-5 h-5 mr-4 flex-shrink-0 text-primary" />
+                    <span className="font-medium">{college.email || "Not available"}</span>
                   </div>
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <Globe className="w-4 h-4 mr-3 flex-shrink-0" />
+                  <div className="flex items-center p-3 bg-muted/20 rounded-xl hover:bg-muted/30 transition-all duration-300">
+                    <Globe className="w-5 h-5 mr-4 flex-shrink-0 text-primary" />
                     {college.website_url ? (
                       <a
                         href={college.website_url.startsWith("http") ? college.website_url : `https://${college.website_url}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline break-all"
+                        className="text-primary hover:underline break-all font-medium transition-all duration-300 hover:scale-105"
                       >
                         {college.website_url}
                       </a>
                     ) : (
-                      <span>Not available</span>
+                      <span className="font-medium">Not available</span>
                     )}
                   </div>
                 </CardContent>
